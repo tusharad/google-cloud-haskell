@@ -1,0 +1,81 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           google-cloud-compute
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/tusharad/google-cloud-compute#readme>
+homepage:       https://github.com/tusharad/google-cloud-compute#readme
+bug-reports:    https://github.com/tusharad/google-cloud-compute/issues
+author:         tushar
+maintainer:     tusharadhatrao@gmail.com
+copyright:      2025 tushar
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/tusharad/google-cloud-compute
+
+library
+  exposed-modules:
+      Google.Cloud.Compute.Common
+      Google.Cloud.Compute.Disk
+      Google.Cloud.Compute.Firewall
+      Google.Cloud.Compute.Instance
+      Google.Cloud.Compute.Network
+      Lib
+  other-modules:
+      Paths_google_cloud_compute
+  autogen-modules:
+      Paths_google_cloud_compute
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , google-cloud-common
+    , text
+  default-language: Haskell2010
+
+executable google-cloud-compute-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_google_cloud_compute
+  autogen-modules:
+      Paths_google_cloud_compute
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , google-cloud-common
+    , google-cloud-compute
+    , text
+  default-language: Haskell2010
+
+test-suite google-cloud-compute-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_google_cloud_compute
+  autogen-modules:
+      Paths_google_cloud_compute
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , google-cloud-common
+    , google-cloud-compute
+    , text
+  default-language: Haskell2010
