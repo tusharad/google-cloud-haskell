@@ -278,12 +278,12 @@ deleteBucket bucketName =
 
 -- | Downloads an object from a bucket to a local file.
 --
--- @downloadObject bucketName objectName saveLocation@ downloads the specified object to the
--- given file path. It returns either an error message or a unit value indicating success.
+-- @downloadObject bucketName objectName saveLocation@ returns the specified object in
+-- lazy bytestring format. It returns either an error message or content indicating success.
 -- Note: This function downloads the entire object at once; for large objects, consider
 -- implementing streaming or slicing (planned for future versions).
-downloadObject :: String -> String -> FilePath -> IO (Either String ())
-downloadObject bucketName objectName saveLocation = do
+downloadObject :: String -> String -> IO (Either String BSL.ByteString)
+downloadObject bucketName objectName = do
   let reqOpts =
         RequestOptions
           { reqMethod = GET
@@ -298,8 +298,7 @@ downloadObject bucketName objectName saveLocation = do
     Left err -> return (Left err)
     Right resp -> do
       let body = resp
-      BSL.writeFile saveLocation body
-      return $ Right ()
+      return $ Right body
 
 -- | Uploads an object to a bucket.
 --
