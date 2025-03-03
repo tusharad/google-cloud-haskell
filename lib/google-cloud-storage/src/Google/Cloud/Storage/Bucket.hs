@@ -4,6 +4,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
+-- | This module provides functions for interacting with Google Cloud Storage buckets and objects.
+-- It includes functionality for listing, creating, updating, and deleting buckets, as well as
+-- copying, deleting, downloading, and uploading objects.
 module Google.Cloud.Storage.Bucket
   ( Buckets (..)
   , Location (..)
@@ -18,6 +21,7 @@ module Google.Cloud.Storage.Bucket
   , deleteObject
   , deleteBucket
   , downloadObject
+  , uploadObject
   ) where
 
 import Data.Aeson
@@ -26,75 +30,117 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
 import GHC.Generics (Generic)
 import Google.Cloud.Common.Core 
 
+-- | Represents a list of buckets in a Google Cloud Storage project.
 data Buckets = Buckets
-  { kind :: String
-  , items :: [Bucket]
+  { kind :: String  -- ^ The kind of item this is. For buckets, this is always "storage#buckets".
+  , items :: [Bucket]  -- ^ The list of buckets.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
+-- | Represents a single bucket in Google Cloud Storage.
 data Bucket = Bucket
-  { kind :: String
-  , selfLink :: String
-  , id :: String
-  , name :: String
-  , projectNumber :: String
-  , generation :: String
-  , metageneration :: String
-  , location :: String
-  , storageClass :: String
-  , etag :: String
-  , timeCreated :: String
-  , updated :: String
-  , softDeletePolicy :: SoftDeletePolicy
-  , iamConfiguration :: IAMConfiguration
-  , locationType :: String
-  , satisfiesPZI :: Bool
-  , hierarchicalNamespace :: Maybe HierarchicalNamespace
+  { kind :: String  -- ^ The kind of item this is. For buckets, this is always "storage#bucket".
+  , selfLink :: String  -- ^ The URL of this bucket.
+  , id :: String  -- ^ The ID of the bucket.
+  , name :: String  -- ^ The name of the bucket.
+  , projectNumber :: String  -- ^ The project number of the project the bucket belongs to.
+  , generation :: String  -- ^ The generation of this bucket.
+  , metageneration :: String  -- ^ The metadata generation of this bucket.
+  , location :: String  -- ^ The location of the bucket.
+  , storageClass :: String  -- ^ The storage class of the bucket.
+  , etag :: String  -- ^ The entity tag for this bucket.
+  , timeCreated :: String  -- ^ The creation time of the bucket.
+  , updated :: String  -- ^ The last modification time of the bucket.
+  , softDeletePolicy :: SoftDeletePolicy  -- ^ The soft delete policy of the bucket.
+  , iamConfiguration :: IAMConfiguration  -- ^ The IAM configuration of the bucket.
+  , locationType :: String  -- ^ The type of location (e.g., region).
+  , satisfiesPZI :: Bool  -- ^ Whether the bucket satisfies the PZI (Per-Zone Isolation) requirement.
+  , hierarchicalNamespace :: Maybe HierarchicalNamespace  -- ^ The hierarchical namespace configuration.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
+-- | Represents the soft delete policy of a bucket.
 data SoftDeletePolicy = SoftDeletePolicy
-  { retentionDurationSeconds :: String
-  , effectiveTime :: String
+  { retentionDurationSeconds :: String  -- ^ The duration in seconds that soft-deleted objects are retained.
+  , effectiveTime :: String  -- ^ The time from which the policy was enforced.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
+-- | Represents the IAM configuration of a bucket.
 data IAMConfiguration = IAMConfiguration
-  { bucketPolicyOnly :: BucketPolicyOnly
-  , uniformBucketLevelAccess :: UniformBucketLevelAccess
-  , publicAccessPrevention :: String
+  { bucketPolicyOnly :: BucketPolicyOnly  -- ^ The Bucket Policy Only configuration.
+  , uniformBucketLevelAccess :: UniformBucketLevelAccess  -- ^ The Uniform Bucket-Level Access configuration.
+  , publicAccessPrevention :: String  -- ^ The public access prevention status.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
+-- | Represents the Bucket Policy Only configuration.
 data BucketPolicyOnly = BucketPolicyOnly
-  { enabled :: Bool
-  , lockedTime :: Maybe String
+  { enabled :: Bool  -- ^ Whether Bucket Policy Only is enabled.
+  , lockedTime :: Maybe String  -- ^ The time when the configuration was locked, if applicable.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
+-- | Represents the Uniform Bucket-Level Access configuration.
 data UniformBucketLevelAccess = UniformBucketLevelAccess
-  { enabled :: Bool
-  , lockedTime :: Maybe String
+  { enabled :: Bool  -- ^ Whether Uniform Bucket-Level Access is enabled.
+  , lockedTime :: Maybe String  -- ^ The time when the configuration was locked, if applicable.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
+-- | Represents the hierarchical namespace configuration of a bucket.
 newtype HierarchicalNamespace = HierarchicalNamespace
-  { enabled :: Bool
+  { enabled :: Bool  -- ^ Whether hierarchical namespace is enabled.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
-googleStorageUrl :: String
-googleStorageUrl = "https://storage.googleapis.com/storage/v1/b"
+-- | Represents the location of a bucket.
+newtype Location = Location String
+  deriving (Eq)
 
+instance Show Location where
+  show (Location location) = location
+
+-- | Represents the storage class of a bucket or object.
+data StorageClass
+  = STANDARD  -- ^ Standard storage class, for frequently accessed data.
+  | NEARLINE  -- ^ Nearline storage class, for infrequently accessed data.
+  | COLDLINE  -- ^ Coldline storage class, for rarely accessed data.
+  | ARCHIVE   -- ^ Archive storage class, for long-term data archiving.
+  deriving (Eq, Show)
+
+-- | Data required to create a new bucket.
 data CreateBucketData = CreateBucketData
-  { name :: String
-  , location :: Location
-  , storageClass :: StorageClass
-  , projectId :: String
+  { name :: String  -- ^ The name of the bucket to create.
+  , location :: Location  -- ^ The location where the bucket will be created.
+  , storageClass :: StorageClass  -- ^ The storage class for the bucket.
+  , projectId :: String  -- ^ The ID of the project in which to create the bucket.
   }
   deriving (Show)
 
--- List Buckets
+-- | Request data for copying an object.
+data CopyObjectRequest = CopyObjectRequest
+  { sourceBucketName :: String  -- ^ The name of the source bucket.
+  , sourceObjectName :: String  -- ^ The name of the source object.
+  , destinationBucketName :: String  -- ^ The name of the destination bucket.
+  , destinationObject :: String  -- ^ The name of the destination object.
+  }
+  deriving (Show, Generic)
+
+-- | Response data for copying an object.
+data CopyObjectResp = CopyObjectResp
+  { kind :: String  -- ^ The kind of item this is.
+  , totalBytesRewritten :: String  -- ^ The total number of bytes rewritten.
+  , objectSize :: String  -- ^ The size of the object.
+  , done :: Bool  -- ^ Whether the copy operation is complete.
+  , rewriteToken :: Maybe String  -- ^ Token for continuing the rewrite operation, if not done.
+  }
+  deriving (Show, Eq, Generic, FromJSON)
+
+-- | Lists all buckets in a given project.
+--
+-- @listBuckets projectId@ makes a request to list all buckets in the specified @projectId@.
+-- It returns either an error message or a 'Buckets' object containing the list of buckets.
 listBuckets :: String -> IO (Either String Buckets)
 listBuckets projectId =
   doRequestJSON
@@ -107,31 +153,10 @@ listBuckets projectId =
       , mbReqPath = Nothing
       }
 
-data StorageClass
-  = STANDARD
-  | NEARLINE
-  | COLDLINE
-  | ARCHIVE
-  deriving (Eq, Show)
-
-newtype Location = Location String
-  deriving (Eq)
-
-instance Show Location where
-  show (Location location) = location
-
--- Create Bucket
-data CreateBucketRequest = CreateBucketRequest
-  { name :: String
-  , location :: String
-  , storageClass :: StorageClass
-  }
-  deriving (Show)
-
-instance ToJSON CreateBucketRequest where
-  toJSON (CreateBucketRequest name location storageClass) =
-    object ["name" .= name, "location" .= location, "storageClass" .= show storageClass]
-
+-- | Creates a new bucket in Google Cloud Storage.
+--
+-- @createBucket createBucketData@ creates a new bucket with the specified name, location,
+-- storage class, and project ID. It returns either an error message or a unit value indicating success.
 createBucket :: CreateBucketData -> IO (Either String ())
 createBucket CreateBucketData {..} =
   doRequestJSON
@@ -144,13 +169,11 @@ createBucket CreateBucketData {..} =
       , mbQueryParams = Just [("project", Just (BS.pack projectId))]
       }
 
--- Update Bucket Storage Class
-newtype UpdateStorageClassReq = UpdateStorageClassReq StorageClass
-  deriving (Eq)
-
-instance ToJSON UpdateStorageClassReq where
-  toJSON (UpdateStorageClassReq storageClass) = object ["storageClass" .= show storageClass]
-
+-- | Updates the storage class of an existing bucket.
+--
+-- @updateBucketStorageClass bucketName newStorageClass@ updates the storage class of the
+-- specified bucket to @newStorageClass@. It returns either an error message or a unit value
+-- indicating success.
 updateBucketStorageClass :: String -> StorageClass -> IO (Either String ())
 updateBucketStorageClass bucketName newStorageClass =
   doRequestJSON
@@ -163,7 +186,10 @@ updateBucketStorageClass bucketName newStorageClass =
       , mbQueryParams = Just [("fields", Just "storageClass")]
       }
 
--- Fetch Bucket
+-- | Fetches the metadata of a specific bucket.
+--
+-- @fetchBucket bucketName@ retrieves the metadata for the bucket with the given name.
+-- It returns either an error message or the 'Bucket' object.
 fetchBucket :: String -> IO (Either String Bucket)
 fetchBucket bucketName =
   doRequestJSON
@@ -176,25 +202,12 @@ fetchBucket bucketName =
       , mbQueryParams = Nothing
       }
 
--- Copy Object
-data CopyObjectRequest = CopyObjectRequest
-  { sourceBucketName :: String
-  , sourceObjectName :: String
-  , destinationBucketName :: String
-  , destinationObject :: String
-  }
-  deriving (Show, Generic)
-
-data CopyObjectResp = CopyObjectResp
-  { kind :: String
-  , totalBytesRewritten :: String
-  , objectSize :: String
-  , done :: Bool
-  , rewriteToken :: Maybe String
-  }
-  deriving (Show, Eq, Generic, FromJSON)
-
--- TODO: print progress
+-- | Copies an object from one bucket to another.
+--
+-- @copyObject copyObjectRequest@ copies the specified source object to the destination bucket
+-- and object name. For large objects, this function handles the copy in multiple requests
+-- using rewrite tokens. It returns either an error message or a 'CopyObjectResp' indicating
+-- the status of the copy operation.
 copyObject :: CopyObjectRequest -> IO (Either String CopyObjectResp)
 copyObject CopyObjectRequest {..} = do
   go Nothing
@@ -231,7 +244,10 @@ copyObject CopyObjectRequest {..} = do
             else do
               go (Just (rewriteToken resp))
 
--- Delete Object
+-- | Deletes an object from a bucket.
+--
+-- @deleteObject bucketName objectName@ deletes the specified object from the given bucket.
+-- It returns either an error message or a unit value indicating success.
 deleteObject :: String -> String -> IO (Either String ())
 deleteObject bucketName objectName =
   doRequestJSON
@@ -244,7 +260,10 @@ deleteObject bucketName objectName =
       , mbQueryParams = Nothing
       }
 
--- Delete Bucket
+-- | Deletes a bucket.
+--
+-- @deleteBucket bucketName@ deletes the specified bucket. Note that the bucket must be empty
+-- before it can be deleted. It returns either an error message or a unit value indicating success.
 deleteBucket :: String -> IO (Either String ())
 deleteBucket bucketName =
   doRequestJSON
@@ -257,8 +276,12 @@ deleteBucket bucketName =
       , mbQueryParams = Nothing
       }
 
--- Function to download an object from Google Cloud Storage
--- TODO: Implement slicing/streaming download objects
+-- | Downloads an object from a bucket to a local file.
+--
+-- @downloadObject bucketName objectName saveLocation@ downloads the specified object to the
+-- given file path. It returns either an error message or a unit value indicating success.
+-- Note: This function downloads the entire object at once; for large objects, consider
+-- implementing streaming or slicing (planned for future versions).
 downloadObject :: String -> String -> FilePath -> IO (Either String ())
 downloadObject bucketName objectName saveLocation = do
   let reqOpts =
@@ -278,8 +301,42 @@ downloadObject bucketName objectName saveLocation = do
       BSL.writeFile saveLocation body
       return $ Right ()
 
--- TODO functions
-{-
- - composite download object
- - upload objects (direct, stream, slice)
- -}
+-- | Uploads an object to a bucket.
+--
+-- @uploadObject bucketName objectName objectContent@ uploads the given content to the specified
+-- object in the bucket. It returns either an error message or a unit value indicating success.
+-- Note: This function uploads the entire object at once; for large objects, consider
+-- implementing streaming or slicing (planned for future versions).
+uploadObject :: String -> String -> BSL.ByteString -> IO (Either String ())
+uploadObject bucketName objectName objectContent = do
+  doRequestJSON
+    RequestOptions
+      { reqMethod = POST
+      , reqUrl = "https://storage.googleapis.com/upload/storage/v1/b"
+      , mbReqPath = Just $ "/" <> bucketName <> "/o"
+      , mbReqBody = Just objectContent 
+      , mbReqHeaders = Just [("Content-Type", "application/octet-stream")]
+      , mbQueryParams = Just [("uploadType", Just "media"),("name", Just $ BS.pack objectName)]
+      }
+
+-- Helper types and functions (not exported, so no Haddock documentation needed)
+
+data CreateBucketRequest = CreateBucketRequest
+  { name :: String
+  , location :: String
+  , storageClass :: StorageClass
+  }
+  deriving (Show)
+
+instance ToJSON CreateBucketRequest where
+  toJSON (CreateBucketRequest name location storageClass) =
+    object ["name" .= name, "location" .= location, "storageClass" .= show storageClass]
+
+newtype UpdateStorageClassReq = UpdateStorageClassReq StorageClass
+  deriving (Eq)
+
+instance ToJSON UpdateStorageClassReq where
+  toJSON (UpdateStorageClassReq storageClass) = object ["storageClass" .= show storageClass]
+
+googleStorageUrl :: String
+googleStorageUrl = "https://storage.googleapis.com/storage/v1/b"

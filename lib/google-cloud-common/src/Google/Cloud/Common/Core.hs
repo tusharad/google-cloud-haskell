@@ -212,10 +212,11 @@ doRequest RequestOptions {..} = do
             foldl
               (flip ($))
               initialRequest
-              [ maybe Prelude.id setRequestHeaders mbReqHeaders
+              [ 
+               maybe Prelude.id setRequestHeaders mbReqHeaders
               , maybe Prelude.id setRequestQueryString mbQueryParams
               , maybe Prelude.id setRequestBodyLBS mbReqBody
-              , setRequestHeaders [("Authorization", "Bearer " <> tokenBS)]
+              , addRequestHeader "Authorization" ("Bearer " <> tokenBS)
               , setRequestMethod (BS.pack $ show reqMethod)
               ]
       eResp <- try $ httpLbs request

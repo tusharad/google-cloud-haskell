@@ -56,6 +56,7 @@ main = do
 - `copyObject`: Copies an object between buckets.
 - `deleteObject`: Deletes an object.
 - `downloadObject`: Downloads an object.
+- `uploadObject`: Downloads an object.
 
 ### Cloud Logging
 - `listLogs`: Lists available logs.
