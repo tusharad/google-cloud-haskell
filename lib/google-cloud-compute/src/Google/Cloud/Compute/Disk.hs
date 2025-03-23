@@ -1,6 +1,6 @@
 {-|
 Module      : Google.Cloud.Compute.Disk
-Copyright   : (c) 2025 Google LLC
+Copyright   : (c) 2025
 License     : MIT
 Maintainer  : 
 Stability   : experimental
@@ -18,9 +18,10 @@ module Google.Cloud.Compute.Disk
   , DiskResponse (..)
   , InsertDiskOps (..)
   , InsertDiskResponse
+  , Operation (..)
   , deleteDisk
   , createDiskSnapshot
-  , CreateSnapshotResp
+  , CreateSnapshotResp 
   , CreateSnapshotOps (..)
   , defaultCreateSnapshotOps
   , defaultInsertOps
