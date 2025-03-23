@@ -30,7 +30,6 @@ library
       Google.Cloud.Compute.Firewall
       Google.Cloud.Compute.Instance
       Google.Cloud.Compute.Network
-      Lib
   other-modules:
       Paths_google_cloud_compute
   autogen-modules:

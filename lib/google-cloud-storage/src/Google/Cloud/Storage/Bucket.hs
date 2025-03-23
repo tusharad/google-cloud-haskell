@@ -314,7 +314,7 @@ uploadObject bucketName objectName objectContent = do
       , reqUrl = "https://storage.googleapis.com/upload/storage/v1/b"
       , mbReqPath = Just $ "/" <> bucketName <> "/o"
       , mbReqBody = Just objectContent 
-      , mbReqHeaders = Just [("Content-Type", "application/octet-stream")]
+      , mbReqHeaders = Nothing
       , mbQueryParams = Just [("uploadType", Just "media"),("name", Just $ BS.pack objectName)]
       }
 
