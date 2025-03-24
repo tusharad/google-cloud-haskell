@@ -20,6 +20,10 @@ module Google.Cloud.Compute.Firewall
   , CreateFirewallOps (..)
   , CreateFirewallResp
   , Operation (..)
+  , Warning (..)
+  , WarningData (..)
+  , LogConfig (..)
+  , DeniedFirewall (..)
   , defaultCreateFirewallOps
   ) where
 

@@ -1,6 +1,6 @@
 name:                google-cloud-storage
 version:             0.1.0.0
-github:              "tusharad/google-cloud-storage"
+github:              "tusharad/google-cloud-haskell"
 license:             MIT
 author:              "tushar"
 maintainer:          "tusharadhatrao@gmail.com"
@@ -10,13 +10,13 @@ extra-source-files:
 - README.md
 - CHANGELOG.md
 
-description:         Please see the README on GitHub at <https://github.com/tusharad/google-cloud-storage#readme>
+description: GCP Storage bucket client for Haskell.
 
 dependencies:
 - base >= 4.7 && < 5
-- bytestring
-- text
-- aeson
+- bytestring >= 0.9.1.4
+- text >= 1.2 && <3
+- aeson < 3
 - google-cloud-common
 
 ghc-options:
@@ -32,17 +32,6 @@ ghc-options:
 
 library:
   source-dirs: src
-
-executables:
-  google-cloud-storage-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - google-cloud-storage
 
 tests:
   google-cloud-storage-test:

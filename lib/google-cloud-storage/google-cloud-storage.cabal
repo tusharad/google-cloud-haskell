@@ -6,9 +6,9 @@ cabal-version: 1.12
 
 name:           google-cloud-storage
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/tusharad/google-cloud-storage#readme>
-homepage:       https://github.com/tusharad/google-cloud-storage#readme
-bug-reports:    https://github.com/tusharad/google-cloud-storage/issues
+description:    GCP Storage bucket client for Haskell.
+homepage:       https://github.com/tusharad/google-cloud-haskell#readme
+bug-reports:    https://github.com/tusharad/google-cloud-haskell/issues
 author:         tushar
 maintainer:     tusharadhatrao@gmail.com
 copyright:      2025 tushar
@@ -21,39 +21,22 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/tusharad/google-cloud-storage
+  location: https://github.com/tusharad/google-cloud-haskell
 
 library
   exposed-modules:
       Google.Cloud.Storage.Bucket
-      Lib
   other-modules:
       Paths_google_cloud_storage
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      aeson
+      aeson <3
     , base >=4.7 && <5
-    , bytestring
+    , bytestring >=0.9.1.4
     , google-cloud-common
-    , text
-  default-language: Haskell2010
-
-executable google-cloud-storage-exe
-  main-is: Main.hs
-  other-modules:
-      Paths_google_cloud_storage
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.7 && <5
-    , bytestring
-    , google-cloud-common
-    , google-cloud-storage
-    , text
+    , text >=1.2 && <3
   default-language: Haskell2010
 
 test-suite google-cloud-storage-test
@@ -65,10 +48,10 @@ test-suite google-cloud-storage-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      aeson <3
     , base >=4.7 && <5
-    , bytestring
+    , bytestring >=0.9.1.4
     , google-cloud-common
     , google-cloud-storage
-    , text
+    , text >=1.2 && <3
   default-language: Haskell2010

@@ -1,7 +1,7 @@
 name:                google-cloud-compute
 version:             0.1.0.0
-github:              "tusharad/google-cloud-compute"
-license:             BSD-3-Clause
+github:              "tusharad/google-cloud-haskell"
+license:             MIT
 author:              "tushar"
 maintainer:          "tusharadhatrao@gmail.com"
 copyright:           "2025 tushar"
@@ -10,20 +10,16 @@ extra-source-files:
 - README.md
 - CHANGELOG.md
 
-# Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
-
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/tusharad/google-cloud-compute#readme>
+description: GCP Compute client for Haskell.
 
 dependencies:
 - base >= 4.7 && < 5
 - google-cloud-common
-- aeson
-- text
+- aeson < 3
+- text >= 1.2 && <3
+- bytestring >= 0.9.1.4
+- containers >= 0.6 && <1
+- http-conduit >= 2.2 && < 2.4
 
 ghc-options:
 - -Wall
@@ -39,17 +35,6 @@ ghc-options:
 library:
   source-dirs: src
 
-executables:
-  google-cloud-compute-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - google-cloud-compute
-
 tests:
   google-cloud-compute-test:
     main:                Spec.hs
@@ -60,3 +45,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - google-cloud-compute
+    - hspec >= 1.3

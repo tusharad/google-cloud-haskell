@@ -23,6 +23,8 @@ module Google.Cloud.Compute.Disk
   , createDiskSnapshot
   , CreateSnapshotResp 
   , CreateSnapshotOps (..)
+  , Warning (..)
+  , WarningData (..)
   , defaultCreateSnapshotOps
   , defaultInsertOps
   ) where

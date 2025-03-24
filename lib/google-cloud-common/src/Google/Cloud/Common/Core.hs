@@ -5,6 +5,8 @@ module Google.Cloud.Common.Core
   ( genAccessToken
   , RequestOptions (..)
   , RequestMethod (..)
+  , AccessTokenResp (..)
+  , GoogleApplicationCred (..)
   , doRequest
   , doRequestJSON
   , toPath 

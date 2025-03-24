@@ -54,6 +54,7 @@ module Google.Cloud.Compute.Instance
   -- Query Parameter Types
   , ListInstancesQuery (..)
   , RequestIdQuery (..)
+  , InsertInstanceOps (..)
   -- Functions
   , listInstances
   , deleteInstance
@@ -91,19 +92,19 @@ data ListInstancesQuery = ListInstancesQuery
   , returnPartialSuccess :: Maybe Bool
     -- ^ Whether to return partial success results
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 -- Query parameters for operations with requestId (start, stop, delete)
 data RequestIdQuery = RequestIdQuery
   { requestId :: Maybe String
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 -- ** Data Types with Custom JSON Instances**
 
 data RunDuration
   = TerminationTime String
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON RunDuration where
   parseJSON = withObject "RunDuration" $ \o -> TerminationTime <$> o .: "terminationTime"
@@ -112,7 +113,7 @@ instance ToJSON RunDuration where
   toJSON (TerminationTime t) = object ["terminationTime" .= t]
 
 data OnInstanceTerminationAction = DiscardLocalSsd {discardLocalSsd :: Bool}
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON OnInstanceTerminationAction where
   parseJSON = withObject "OnInstanceTerminationAction" $ \o -> DiscardLocalSsd <$> o .: "discardLocalSsd"
@@ -131,7 +132,7 @@ data Scheduling = Scheduling
   , provisioningModel :: String
   , instanceTerminationAction :: InstanceTerminationAction
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON Scheduling where
   parseJSON = withObject "Scheduling" $ \o ->
@@ -162,7 +163,7 @@ instance ToJSON Scheduling where
 
 data InstanceTerminationAction
   = RunDurationRunDuration RunDuration
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON InstanceTerminationAction where
   parseJSON v = RunDurationRunDuration <$> parseJSON v
@@ -175,7 +176,7 @@ data NodeAffinity = NodeAffinity
   , operator :: String
   , values :: [String]
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON NodeAffinity where
   parseJSON = withObject "NodeAffinity" $ \o ->
@@ -196,7 +197,7 @@ data Warning = Warning
   { code :: String
   , message :: String
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON Warning where
   parseJSON = withObject "Warning" $ \o ->
@@ -266,7 +267,7 @@ data InstanceMetadata = InstanceMetadata
   , keyRevocationActionType :: Maybe Text
     -- ^ Type of key revocation action if applicable
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON InstanceMetadata where
   parseJSON = withObject "InstanceMetadata" $ \o ->
@@ -334,7 +335,7 @@ data GuestAccelerator = GuestAccelerator
   { acceleratorType :: Text
   , acceleratorCount :: Int
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON GuestAccelerator where
   parseJSON = withObject "GuestAccelerator" $ \o ->
@@ -354,7 +355,7 @@ data ReservationAffinity = ReservationAffinity
   , key :: Maybe Text
   , values :: Maybe [Text]
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON ReservationAffinity where
   parseJSON = withObject "ReservationAffinity" $ \o ->
@@ -375,7 +376,7 @@ instance ToJSON ReservationAffinity where
 data DisplayDevice = DisplayDevice
   { enableDisplay :: Bool
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON DisplayDevice where
   parseJSON = withObject "DisplayDevice" $ \o ->
@@ -390,7 +391,7 @@ data ShieldedInstanceConfig = ShieldedInstanceConfig
   , enableVtpm :: Bool
   , enableIntegrityMonitoring :: Bool
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON ShieldedInstanceConfig where
   parseJSON = withObject "ShieldedInstanceConfig" $ \o ->
@@ -410,7 +411,7 @@ instance ToJSON ShieldedInstanceConfig where
 data ShieldedInstanceIntegrityPolicy = ShieldedInstanceIntegrityPolicy
   { policy :: Maybe UpdateAutoLearnPolicy
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON ShieldedInstanceIntegrityPolicy where
   parseJSON = withObject "ShieldedInstanceIntegrityPolicy" $ \o ->
@@ -424,7 +425,7 @@ instance ToJSON ShieldedInstanceIntegrityPolicy where
         [("policy" .=) <$> policy sip]
 
 data UpdateAutoLearnPolicy = UpdateAutoLearnPolicy {updateAutoLearnPolicy :: Bool}
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON UpdateAutoLearnPolicy where
   parseJSON = withObject "UpdateAutoLearnPolicy" $ \o ->
@@ -438,7 +439,7 @@ data ConfidentialInstanceConfig = ConfidentialInstanceConfig
   { enableConfidentialCompute :: Maybe Bool
   , confidentialInstanceType :: Maybe Text
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON ConfidentialInstanceConfig where
   parseJSON = withObject "ConfidentialInstanceConfig" $ \o ->
@@ -461,7 +462,7 @@ data InstanceEncryptionKey = InstanceEncryptionKey
   , rsaEncryptedKey :: Maybe Text
   , kmsKeyName :: Maybe Text
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON InstanceEncryptionKey where
   parseJSON = withObject "InstanceEncryptionKey" $ \o ->
@@ -486,7 +487,7 @@ instance ToJSON InstanceEncryptionKey where
 data NetworkPerformanceConfig = NetworkPerformanceConfig
   { totalEgressBandwidthTier :: Text
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON NetworkPerformanceConfig where
   parseJSON = withObject "NetworkPerformanceConfig" $ \o ->
@@ -507,7 +508,7 @@ data ResourceStatus = ResourceStatus
   , provisioningModel :: String
   , instanceTerminationAction :: InstanceTerminationAction
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON ResourceStatus where
   parseJSON = withObject "ResourceStatus" $ \o ->
@@ -541,7 +542,7 @@ data InstanceList = InstanceList
   , id_ :: String
   , items :: Maybe [InstanceMetadata]
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON InstanceList where
   parseJSON = withObject "InstanceList" $ \o ->
@@ -588,7 +589,7 @@ data InstanceDeleteResp = InstanceDeleteResp
   , description :: Maybe String
   , operationGroupId :: Maybe String
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON InstanceDeleteResp where
   parseJSON = withObject "InstanceDeleteResp" $ \o ->
@@ -651,7 +652,7 @@ instance ToJSON InstanceDeleteResp where
 data Error_ = Error_
   { errors :: Maybe [ErrorDetail]
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON Error_ where
   parseJSON = withObject "Error" $ \o -> Error_ <$> o .:? "errors"
@@ -665,7 +666,7 @@ data ErrorDetail = ErrorDetail
   , message :: Maybe String
   , errorDetails :: Maybe [DetailedError]
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON ErrorDetail where
   parseJSON = withObject "ErrorDetail" $ \o ->
@@ -691,7 +692,7 @@ data DetailedError = DetailedError
   , help :: Maybe Help
   , localizedMessage :: Maybe LocalizedMessage
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON DetailedError where
   parseJSON = withObject "DetailedError" $ \o ->
@@ -715,7 +716,7 @@ data ErrorInfo = ErrorInfo
   { reason :: Maybe String
   , domain :: Maybe String
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON ErrorInfo where
   parseJSON = withObject "ErrorInfo" $ \o ->
@@ -738,7 +739,7 @@ data QuotaInfo = QuotaInfo
   , futureLimit :: Maybe Double
   , rolloutStatus :: Maybe String
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON QuotaInfo where
   parseJSON = withObject "QuotaInfo" $ \o ->
@@ -763,7 +764,7 @@ instance ToJSON QuotaInfo where
 data Help = Help
   { links :: Maybe [Link]
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON Help where
   parseJSON = withObject "Help" $ \o -> Help <$> o .:? "links"
@@ -775,7 +776,7 @@ data Link = Link
   { description :: Maybe String
   , url :: Maybe String
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON Link where
   parseJSON = withObject "Link" $ \o ->
@@ -795,7 +796,7 @@ data LocalizedMessage = LocalizedMessage
   { locale :: Maybe String
   , message :: Maybe String
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON LocalizedMessage where
   parseJSON = withObject "LocalizedMessage" $ \o ->
@@ -825,7 +826,7 @@ data InstanceStartResponse = InstanceStartResponse
   , statusMessage :: Maybe Text
   , user :: Maybe Text
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON InstanceStartResponse where
   parseJSON = withObject "InstanceStartResponse" $ \o ->
@@ -867,18 +868,18 @@ data InsertInstanceOps = InsertInstanceOps
   , disks :: Maybe [Disk]
   , networkInterfaces :: Maybe [NetworkInterface]
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 data NetworkInterface = NetworkInterface
   { network :: String
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 data InsertInstanceQuery = InsertInstanceQuery
   { requestId :: Maybe String
   , sourceInstanceTemplate :: Maybe String
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance ToJSON InsertInstanceOps where
   toJSON InsertInstanceOps {..} =

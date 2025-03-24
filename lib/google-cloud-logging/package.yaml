@@ -1,7 +1,7 @@
 name:                google-cloud-logging
 version:             0.1.0.0
-github:              "tusharad/google-cloud-logging"
-license:             BSD-3-Clause
+github:              "tusharad/google-cloud-haskell"
+license:             MIT
 author:              "tushar"
 maintainer:          "tusharadhatrao@gmail.com"
 copyright:           "2025 tushar"
@@ -10,17 +10,12 @@ extra-source-files:
 - README.md
 - CHANGELOG.md
 
-# Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
-
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/tusharad/google-cloud-logging#readme>
+description: GCP Logging client for Haskell
 
 dependencies:
 - base >= 4.7 && < 5
+- aeson < 3
+- google-cloud-common
 
 ghc-options:
 - -Wall
@@ -35,17 +30,6 @@ ghc-options:
 
 library:
   source-dirs: src
-
-executables:
-  google-cloud-logging-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - google-cloud-logging
 
 tests:
   google-cloud-logging-test:

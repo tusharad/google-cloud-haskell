@@ -1,4 +1,4 @@
-cabal-version: 2.2
+cabal-version: 1.12
 
 -- This file has been generated from package.yaml by hpack version 0.37.0.
 --
@@ -6,13 +6,13 @@ cabal-version: 2.2
 
 name:           google-cloud-common
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/tusharad/google-cloud-common#readme>
-homepage:       https://github.com/tusharad/google-cloud-common#readme
-bug-reports:    https://github.com/tusharad/google-cloud-common/issues
+description:    A common module for all GCP Client packages.
+homepage:       https://github.com/tusharad/google-cloud-haskell#readme
+bug-reports:    https://github.com/tusharad/google-cloud-haskell/issues
 author:         tushar
 maintainer:     tusharadhatrao@gmail.com
 copyright:      2025 tushar
-license:        BSD-3-Clause
+license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
@@ -21,51 +21,26 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/tusharad/google-cloud-common
+  location: https://github.com/tusharad/google-cloud-haskell
 
 library
   exposed-modules:
       Google.Cloud.Common.Core
   other-modules:
       Paths_google_cloud_common
-  autogen-modules:
-      Paths_google_cloud_common
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      aeson
+      aeson <3
     , base >=4.7 && <5
-    , bytestring
-    , containers
-    , http-conduit
+    , bytestring >=0.9.1.4
+    , containers >=0.6 && <1
+    , http-conduit >=2.2 && <2.4
     , jwt
     , mtl
     , process
-    , text
-    , time
-  default-language: Haskell2010
-
-executable google-cloud-common-exe
-  main-is: Main.hs
-  other-modules:
-      Paths_google_cloud_common
-  autogen-modules:
-      Paths_google_cloud_common
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , google-cloud-common
-    , http-conduit
-    , jwt
-    , mtl
-    , process
-    , text
+    , text >=1.2 && <3
     , time
   default-language: Haskell2010
 
@@ -74,21 +49,20 @@ test-suite google-cloud-common-test
   main-is: Spec.hs
   other-modules:
       Paths_google_cloud_common
-  autogen-modules:
-      Paths_google_cloud_common
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      aeson <3
     , base >=4.7 && <5
-    , bytestring
-    , containers
+    , bytestring >=0.9.1.4
+    , containers >=0.6 && <1
     , google-cloud-common
-    , http-conduit
+    , hspec >=1.3
+    , http-conduit >=2.2 && <2.4
     , jwt
     , mtl
     , process
-    , text
+    , text >=1.2 && <3
     , time
   default-language: Haskell2010
