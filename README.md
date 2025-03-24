@@ -1,4 +1,3 @@
-
 # Google Cloud Haskell Client
 
 Haskell idiomatic clients for [Google Cloud Platform](https://cloud.google.com/) services.
@@ -14,58 +13,121 @@ The following libraries are currently implemented:
 - [google-cloud-logging](lib/google-cloud-logging): Enables interaction with Google Cloud Logging for log retrieval and management.
 
 ## Installation & Usage
-To use this library, ensure you have Haskell and `stack` installed. You can include the respective packages in your `stack.yaml` or `cabal.project` file.
+To use this library, ensure you have Haskell and `stack` installed. You can include the respective packages in your `package.yaml` or `.cabal` file.
 
-Example usage:
+## Examples
+
+### Google Cloud Compute
+
 ```haskell
 import Google.Cloud.Compute.Instance
 
-main :: IO ()
-main = do
-  instances <- listInstances
-  print instances
+-- List all instances in a project and zone
+listInstancesExample :: IO ()
+listInstancesExample = do
+  let projectId = "my-gcp-project"
+      zone = "us-central1-a"
+      query = defaultListInstancesQuery
+  result <- listInstances projectId zone (Just query)
+  case result of
+    Left err -> putStrLn $ "Error listing instances: " ++ err
+    Right instanceList -> print instanceList
+
+-- Create a new instance
+createInstanceExample :: IO ()
+createInstanceExample = do
+  let projectId = "my-gcp-project"
+      zone = "us-central1-a"
+      instanceName = "my-instance"
+      machineType = "e2-medium"
+      instanceOps = defaultInsertInstanceOps projectId zone instanceName machineType
+      requestId = defaultRequestIdQuery "unique-request-id-123"
+  result <- insertInstance projectId zone instanceOps (Just $ InsertInstanceQuery (Just "unique-request-id-123") Nothing)
+  case result of
+    Left err -> putStrLn $ "Error creating instance: " ++ err
+    Right response -> putStrLn "Instance creation initiated successfully"
+
+-- Start/Stop an instance
+instanceControlExample :: IO ()
+instanceControlExample = do
+  let projectId = "my-gcp-project"
+      zone = "us-central1-a"
+      instanceName = "my-instance"
+      requestId = defaultRequestIdQuery "unique-request-id-456"
+  
+  -- Start the instance
+  startResult <- startInstance projectId zone instanceName (Just requestId)
+  
+  -- Stop the instance
+  stopResult <- stopInstance projectId zone instanceName (Just requestId)
+  
+  putStrLn "Instance control operations completed"
 ```
 
-## Features & Modules
+### Google Cloud Storage
 
-### Compute Engine
+```haskell
+import Google.Cloud.Storage
 
-#### Disk Management
-- `listDisks`: Lists available disks.
-- `insertDisk`: Creates a new disk.
-- `deleteDisk`: Deletes an existing disk.
-- `createDiskSnapshot`: Creates a snapshot of a disk.
+-- List all buckets in a project
+listBucketsExample :: IO ()
+listBucketsExample = do
+  let projectId = "my-gcp-project"
+  result <- listBuckets projectId
+  case result of
+    Left err -> putStrLn $ "Error listing buckets: " ++ err
+    Right buckets -> print buckets
 
-#### Network Management
-- `listNetworks`: Retrieves the list of networks.
+-- Create a new bucket
+createBucketExample :: IO ()
+createBucketExample = do
+  let bucketData = CreateBucketData
+        { name = "my-unique-bucket-name"
+        , location = Location "us-central1"
+        , storageClass = STANDARD
+        , projectId = "my-gcp-project"
+        }
+  result <- createBucket bucketData
+  case result of
+    Left err -> putStrLn $ "Error creating bucket: " ++ err
+    Right _ -> putStrLn "Bucket created successfully"
 
-#### Instance Management
-- `listInstances`: Lists compute instances.
-- `deleteInstance`: Deletes an instance.
-- `startInstance`: Starts an instance.
-- `stopInstance`: Stops an instance.
+-- Upload and download objects
+objectOperationsExample :: IO ()
+objectOperationsExample = do
+  let bucketName = "my-bucket"
+      objectName = "my-object.txt"
+      content = "Hello, Google Cloud Storage!"
+  
+  -- Upload object
+  uploadResult <- uploadObject bucketName objectName (BSL.pack content)
+  
+  -- Download object
+  downloadResult <- downloadObject bucketName objectName
+  case downloadResult of
+    Left err -> putStrLn $ "Error downloading object: " ++ err
+    Right content -> putStrLn $ "Downloaded content: " ++ show content
+  
+  -- Copy object to another bucket
+  let copyRequest = CopyObjectRequest
+        { sourceBucketName = "my-bucket"
+        , sourceObjectName = "my-object.txt"
+        , destinationBucketName = "my-other-bucket"
+        , destinationObject = "my-copied-object.txt"
+        }
+  copyResult <- copyObject copyRequest
+  
+  -- Delete object
+  deleteResult <- deleteObject bucketName objectName
+  
+  putStrLn "Object operations completed"
+```
 
-#### Firewall Management
-- `listFirewalls`: Lists firewall rules.
-- `createFirewall`: Creates a new firewall rule.
+## Authentication
+### There are two ways of authentication,
 
-### Cloud Storage
-- `listBuckets`: Lists storage buckets.
-- `createBucket`: Creates a new bucket.
-- `deleteBucket`: Deletes a bucket.
-- `copyObject`: Copies an object between buckets.
-- `deleteObject`: Deletes an object.
-- `downloadObject`: Downloads an object.
-- `uploadObject`: Downloads an object.
-
-### Cloud Logging
-- `listLogs`: Lists available logs.
-
-## Roadmap & TODOs
-- Add more useful functions and enhancements.
-- Improve test coverage and add unit tests.
-- Write comprehensive documentation.
-- Release on [Hackage](https://hackage.haskell.org/).
+1. Application will look for `GOOGLE_APPLICATION_CREDENTIALS` environment variable and read the JSON file path.
+2. If the env variable is not stored, it will use `print-access-token`. Make sure gcloud is installed and logged in for this to work.
 
 ## Contributions
 Contributions are welcome! Feel free to submit PRs or open issues for discussion.

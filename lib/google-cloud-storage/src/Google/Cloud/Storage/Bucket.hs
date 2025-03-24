@@ -22,6 +22,7 @@ module Google.Cloud.Storage.Bucket
   , deleteBucket
   , downloadObject
   , uploadObject
+  , googleStorageUrl
   ) where
 
 import Data.Aeson
@@ -174,6 +175,10 @@ createBucket CreateBucketData {..} =
 -- @updateBucketStorageClass bucketName newStorageClass@ updates the storage class of the
 -- specified bucket to @newStorageClass@. It returns either an error message or a unit value
 -- indicating success.
+-- -- Example:
+--
+-- >>> updateBucketStorageClass "my-bucket" COLDLINE
+-- Right ()
 updateBucketStorageClass :: String -> StorageClass -> IO (Either String ())
 updateBucketStorageClass bucketName newStorageClass =
   doRequestJSON
@@ -190,6 +195,10 @@ updateBucketStorageClass bucketName newStorageClass =
 --
 -- @fetchBucket bucketName@ retrieves the metadata for the bucket with the given name.
 -- It returns either an error message or the 'Bucket' object.
+-- Example:
+--
+-- >>> fetchBucket "my-bucket"
+-- Right (Bucket {name = "my-bucket", ...})
 fetchBucket :: String -> IO (Either String Bucket)
 fetchBucket bucketName =
   doRequestJSON
@@ -208,6 +217,11 @@ fetchBucket bucketName =
 -- and object name. For large objects, this function handles the copy in multiple requests
 -- using rewrite tokens. It returns either an error message or a 'CopyObjectResp' indicating
 -- the status of the copy operation.
+-- Example:
+--
+-- >>> let request = CopyObjectRequest "source-bucket" "source-object" "destination-bucket" "destination-object"
+-- >>> copyObject request
+-- Right (CopyObjectResp {kind = "storage#object", totalBytesRewritten = "12345", objectSize = "12345", done = True, rewriteToken = Nothing})
 copyObject :: CopyObjectRequest -> IO (Either String CopyObjectResp)
 copyObject CopyObjectRequest {..} = do
   go Nothing
@@ -248,6 +262,10 @@ copyObject CopyObjectRequest {..} = do
 --
 -- @deleteObject bucketName objectName@ deletes the specified object from the given bucket.
 -- It returns either an error message or a unit value indicating success.
+-- Example:
+--
+-- >>> deleteObject "my-bucket" "my-object"
+-- Right ()
 deleteObject :: String -> String -> IO (Either String ())
 deleteObject bucketName objectName =
   doRequestJSON
@@ -264,6 +282,11 @@ deleteObject bucketName objectName =
 --
 -- @deleteBucket bucketName@ deletes the specified bucket. Note that the bucket must be empty
 -- before it can be deleted. It returns either an error message or a unit value indicating success.
+--
+-- Example:
+--
+-- >>> deleteBucket "my-bucket"
+-- Right ()
 deleteBucket :: String -> IO (Either String ())
 deleteBucket bucketName =
   doRequestJSON
@@ -282,6 +305,10 @@ deleteBucket bucketName =
 -- lazy bytestring format. It returns either an error message or content indicating success.
 -- Note: This function downloads the entire object at once; for large objects, consider
 -- implementing streaming or slicing (planned for future versions).
+-- Example:
+--
+-- >>> downloadObject "my-bucket" "my-object"
+-- Right (bytestring content)
 downloadObject :: String -> String -> IO (Either String BSL.ByteString)
 downloadObject bucketName objectName = do
   let reqOpts =
@@ -306,6 +333,10 @@ downloadObject bucketName objectName = do
 -- object in the bucket. It returns either an error message or a unit value indicating success.
 -- Note: This function uploads the entire object at once; for large objects, consider
 -- implementing streaming or slicing (planned for future versions).
+-- Example:
+--
+-- >>> uploadObject "my-bucket" "my-object" (BSL.pack "object content")
+-- Right ()
 uploadObject :: String -> String -> BSL.ByteString -> IO (Either String ())
 uploadObject bucketName objectName objectContent = do
   doRequestJSON
@@ -321,9 +352,9 @@ uploadObject bucketName objectName objectContent = do
 -- Helper types and functions (not exported, so no Haddock documentation needed)
 
 data CreateBucketRequest = CreateBucketRequest
-  { name :: String
-  , location :: String
-  , storageClass :: StorageClass
+  { name :: String -- ^ Name of the bucket 
+  , location :: String  -- ^ Location of bucket e.g us-central1-a
+  , storageClass :: StorageClass -- ^ Storage Class
   }
   deriving (Show)
 
@@ -337,5 +368,6 @@ newtype UpdateStorageClassReq = UpdateStorageClassReq StorageClass
 instance ToJSON UpdateStorageClassReq where
   toJSON (UpdateStorageClassReq storageClass) = object ["storageClass" .= show storageClass]
 
+-- | GCP Storage Url
 googleStorageUrl :: String
 googleStorageUrl = "https://storage.googleapis.com/storage/v1/b"
