@@ -1,6 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
+{-|
+Google.Cloud.Common.Core . This module contains function and types which are being shared 
+among all GCP client packages.
+|-}
+
 module Google.Cloud.Common.Core
   ( genAccessToken
   , RequestOptions (..)
@@ -10,7 +15,6 @@ module Google.Cloud.Common.Core
   , doRequest
   , doRequestJSON
   , toPath 
-  , googleLoggingUrl 
   ) where
 
 import Control.Exception (try)
@@ -183,6 +187,7 @@ readJSONFile jsonFilePath = do
     Left err -> pure . Left $ show (err :: IOError)
     Right content -> pure $ eitherDecodeStrict (BS.pack content)
 
+-- | Generate temporary access token using print-access-token command
 genTokenViaPrintAccessToken :: IO (Either String BS.ByteString)
 genTokenViaPrintAccessToken = do
   eRes <- try $ readProcess "gcloud" (words "auth print-access-token") []
@@ -190,9 +195,11 @@ genTokenViaPrintAccessToken = do
     Right s -> pure . Right $ BS.pack (init s)
     Left err -> pure . Left $ show (err :: IOError)
 
+-- | Custom Request methods for convenience
 data RequestMethod = GET | POST | PATCH | DELETE
   deriving (Eq, Show)
 
+-- | A type that holds all required information for performing a network action
 data RequestOptions = RequestOptions
   { reqMethod :: RequestMethod
   , reqUrl :: String
@@ -203,6 +210,7 @@ data RequestOptions = RequestOptions
   }
   deriving (Eq, Show)
 
+-- | Helper function to perform network action for given request options
 doRequest :: RequestOptions -> IO (Either String BSL.ByteString)
 doRequest RequestOptions {..} = do
   token <- genAccessToken
@@ -231,6 +239,7 @@ doRequest RequestOptions {..} = do
             then return $ Right respBody
             else return $ Left (T.unpack $ decodeUtf8 respBody)
 
+-- | Helper function to perform url action and return FromJSON type
 doRequestJSON :: (FromJSON b) => RequestOptions -> IO (Either String b)
 doRequestJSON reqOpts = do
   eResp <- doRequest reqOpts
@@ -242,8 +251,7 @@ doRequestJSON reqOpts = do
         Left err -> pure $ Left err
         Right res -> pure $ Right res
 
+-- | Convenience function to return a url path paramter 
+-- | E.g ["hello", "world"] -> /hello/world
 toPath :: [String] -> String
 toPath = foldl (\acc x -> acc <> "/" <> x) ""
-
-googleLoggingUrl :: String
-googleLoggingUrl = "https://logging.googleapis.com/v2"

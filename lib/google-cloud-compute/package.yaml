@@ -5,6 +5,8 @@ license:             MIT
 author:              "tushar"
 maintainer:          "tusharadhatrao@gmail.com"
 copyright:           "2025 tushar"
+category:            Web
+synopsis:            GCP Client for Haskell
 
 extra-source-files:
 - README.md

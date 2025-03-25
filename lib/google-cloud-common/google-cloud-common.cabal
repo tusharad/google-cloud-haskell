@@ -6,7 +6,9 @@ cabal-version: 1.12
 
 name:           google-cloud-common
 version:        0.1.0.0
+synopsis:       GCP Client for Haskell
 description:    A common module for all GCP Client packages.
+category:       Web
 homepage:       https://github.com/tusharad/google-cloud-haskell#readme
 bug-reports:    https://github.com/tusharad/google-cloud-haskell/issues
 author:         tushar
