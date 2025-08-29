@@ -14,6 +14,7 @@ module Google.Cloud.Common.Core
   , GoogleApplicationCred (..)
   , doRequest
   , doRequestJSON
+  , doRequestRaw 
   , toPath 
   ) where
 
@@ -32,7 +33,6 @@ import Data.Time.Clock.POSIX
 import GHC.IO (unsafePerformIO)
 import Network.HTTP.Simple
 import System.Environment (lookupEnv)
-import System.Process
 import qualified Web.JWT as JWT
 import qualified Data.Map.Strict as Map
 
@@ -98,7 +98,7 @@ genAccessToken = do
       case eRes of
         Left err -> pure $ Left err
         Right jsonVal -> getValidToken jsonVal
-    Nothing -> genTokenViaPrintAccessToken
+    Nothing -> getTokenFromMetadataServer
 
 -- Global IORef to store the token in memory
 {-# NOINLINE tokenCache #-}
@@ -117,7 +117,8 @@ createJWT GooGleApplicationCred {..} = do
           , JWT.exp = JWT.numericDate (fromIntegral expiration)
           , JWT.iat = JWT.numericDate (fromIntegral now)
           , JWT.unregisteredClaims = 
-                JWT.ClaimsMap (Map.singleton "scope" "https://www.googleapis.com/auth/cloud-platform")
+                JWT.ClaimsMap (Map.singleton "scope" 
+                            "https://www.googleapis.com/auth/cloud-platform")
           }
 
       mbPrivateKeyBS = JWT.readRsaSecret (TE.encodeUtf8 privateKey)
@@ -153,10 +154,9 @@ fetchAccessToken jwt = do
               (setRequestBodyLBS (BSL.fromStrict $ TE.encodeUtf8 reqBody) initialRequest)
           )
   response <- httpLbs request
-  print response
   let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response) 
   case rBody of
-    Right AccessTokenResp {..} -> return (Just (BS.pack accessToken, now + 3600)) -- Expiry set to 1 hour
+    Right AccessTokenResp {..} -> return (Just (BS.pack accessToken, now + 3600)) 
     Left err -> do 
         print err
         return Nothing
@@ -187,16 +187,23 @@ readJSONFile jsonFilePath = do
     Left err -> pure . Left $ show (err :: IOError)
     Right content -> pure $ eitherDecodeStrict (BS.pack content)
 
--- | Generate temporary access token using print-access-token command
-genTokenViaPrintAccessToken :: IO (Either String BS.ByteString)
-genTokenViaPrintAccessToken = do
-  eRes <- try $ readProcess "gcloud" (words "auth print-access-token") []
-  case eRes of
-    Right s -> pure . Right $ BS.pack (init s)
-    Left err -> pure . Left $ show (err :: IOError)
+getTokenFromMetadataServer :: IO (Either String BS.ByteString)
+getTokenFromMetadataServer = do 
+  initialRequest <- parseRequest "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
+  let request =
+        setRequestHeaders
+          [("Metadata-Flavor", "Google")]
+          ( setRequestMethod "GET"
+              initialRequest
+          )
+  response <- httpLbs request
+  let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response) 
+  case rBody of
+    Right AccessTokenResp {..} -> return . Right $ BS.pack accessToken
+    Left err -> pure $ Left err
 
 -- | Custom Request methods for convenience
-data RequestMethod = GET | POST | PATCH | DELETE
+data RequestMethod = GET | POST | PATCH | DELETE | PUT
   deriving (Eq, Show)
 
 -- | A type that holds all required information for performing a network action
@@ -211,8 +218,8 @@ data RequestOptions = RequestOptions
   deriving (Eq, Show)
 
 -- | Helper function to perform network action for given request options
-doRequest :: RequestOptions -> IO (Either String BSL.ByteString)
-doRequest RequestOptions {..} = do
+doRequestRaw :: RequestOptions -> IO (Either String (Response BSL.ByteString))
+doRequestRaw RequestOptions {..} = do
   token <- genAccessToken
   case token of
     Left err -> throwError (userError err)
@@ -232,6 +239,13 @@ doRequest RequestOptions {..} = do
       eResp <- try $ httpLbs request
       case eResp of
         Left err -> pure $ Left (show (err :: HttpException))
+        Right resp -> pure $ Right resp
+
+doRequest :: RequestOptions -> IO (Either String BSL.ByteString)
+doRequest reqOpts = do
+      eResp <- doRequestRaw reqOpts       
+      case eResp of
+        Left err -> pure $ Left err
         Right resp -> do
           let respStatus = getResponseStatusCode resp
               respBody = getResponseBody resp

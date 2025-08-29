@@ -26,6 +26,8 @@ module Google.Cloud.Storage.Bucket
   ) where
 
 import Data.Aeson
+import Network.HTTP.Types (status200, status308)
+import Network.HTTP.Simple
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import GHC.Generics (Generic)
@@ -310,24 +312,34 @@ deleteBucket bucketName =
 -- >>> downloadObject "my-bucket" "my-object"
 -- Right (bytestring content)
 downloadObject :: String -> String -> IO (Either String BSL.ByteString)
-downloadObject bucketName objectName = do
-  let reqOpts =
-        RequestOptions
-          { reqMethod = GET
-          , reqUrl = googleStorageUrl
-          , mbQueryParams = Just [("alt", Just "media")]
-          , mbReqBody = Nothing
-          , mbReqHeaders = Nothing
-          , mbReqPath = Just $ "/" <> bucketName <> "/o/" <> objectName
-          }
-  res <- doRequest reqOpts
-  case res of
-    Left err -> return (Left err)
-    Right resp -> do
-      let body = resp
-      return $ Right body
+downloadObject bucketName objectName = go 0 mempty
+  where
+    chunkSize :: Int
+    chunkSize = 1024 * 1024  -- 1 MB per chunk (tune as needed)
 
--- | Uploads an object to a bucket.
+    go :: Int -> BSL.ByteString -> IO (Either String BSL.ByteString)
+    go offset acc = do
+      let rangeHeader = ("Range", BS.pack $ 
+                            "bytes=" <> show offset <> "-" <> show (offset + chunkSize - 1))
+          reqOpts =
+                RequestOptions { 
+                    reqMethod = GET
+                  , reqUrl = googleStorageUrl
+                  , mbReqPath = Just $ "/" <> bucketName <> "/o/" <> objectName
+                  , mbReqHeaders = Just [rangeHeader]
+                  , mbQueryParams = Just [("alt", Just "media")]
+                  , mbReqBody = Nothing
+                  }
+      eBody <- doRequest reqOpts
+      case eBody of
+        Left err -> pure $ Left err
+        Right body -> do
+          let len = fromIntegral (BSL.length body)
+          if len < chunkSize
+            then pure $ Right $ (acc `BSL.append` body)  -- last chunk
+            else do 
+              print("donwloded so far: " :: String, offset+chunkSize)
+              go (offset + chunkSize) (acc `BSL.append` body)  
 --
 -- @uploadObject bucketName objectName objectContent@ uploads the given content to the specified
 -- object in the bucket. It returns either an error message or a unit value indicating success.
@@ -338,16 +350,84 @@ downloadObject bucketName objectName = do
 -- >>> uploadObject "my-bucket" "my-object" (BSL.pack "object content")
 -- Right ()
 uploadObject :: String -> String -> BSL.ByteString -> IO (Either String ())
-uploadObject bucketName objectName objectContent = do
-  doRequestJSON
+uploadObject = resumableUploadObject
+
+-- | Initiates a resumable upload session.
+--
+-- Returns the resumable session URL (from the Location header) which can be
+-- used to upload chunks of the object.
+initResumableUpload :: String -> String -> IO (Either String String)
+initResumableUpload bucketName objectName = do
+  eResp <- doRequestRaw
     RequestOptions
       { reqMethod = POST
       , reqUrl = "https://storage.googleapis.com/upload/storage/v1/b"
-      , mbReqPath = Just $ "/" <> bucketName <> "/o"
-      , mbReqBody = Just objectContent 
-      , mbReqHeaders = Nothing
-      , mbQueryParams = Just [("uploadType", Just "media"),("name", Just $ BS.pack objectName)]
+      , mbReqPath = Just ("/" <> bucketName <> "/o")
+      , mbReqBody = Nothing
+      , mbReqHeaders = Just [("Content-Type", "application/json")]
+      , mbQueryParams = Just [("uploadType", Just "resumable")
+                            , ("name", BS.pack <$> Just objectName)]
       }
+  case eResp of
+    Left err -> pure $ Left err
+    Right resp -> case (getResponseHeader "location" resp) of
+      [] -> pure $ Left "Missing resumable upload URL in response"
+      (loc:_) -> pure $ Right (BS.unpack loc)
+
+-- | Uploads a file using a resumable upload session in chunks.
+--
+-- This function splits the objectContent into chunks and uploads sequentially.
+resumableUploadObject :: String -> String -> BSL.ByteString -> IO (Either String ())
+resumableUploadObject bucketName objectName objectContent = do
+  eSessionUrl <- initResumableUpload bucketName objectName
+  case eSessionUrl of
+    Left err -> pure $ Left err
+    Right sessionUrl -> uploadChunks sessionUrl 0 (BSL.toStrict objectContent)
+  where
+    chunkSize :: Int
+    chunkSize = 1024 * 1024  -- 1MB per chunk (tune as needed)
+
+    uploadChunks :: String -> Int -> BS.ByteString -> IO (Either String ())
+    uploadChunks sessionUrl offset bs
+      | BS.null bs = pure $ Right ()
+      | otherwise = do
+          let (chunk, rest) = BS.splitAt chunkSize bs
+              totalSize = offset + BS.length chunk + BS.length rest
+              endByte   = offset + BS.length chunk - 1
+              isLast    = BS.null rest
+              contentRange =
+                if isLast
+                  then "bytes " <> show offset 
+                                <> "-" 
+                                <> show endByte 
+                                <> "/" 
+                                <> show totalSize
+                  else "bytes " <> show offset <> "-" <> show endByte <> "/*"
+
+              headers =
+                [ ("Content-Length", BS.pack (show (BS.length chunk)))
+                , ("Content-Range",  BS.pack contentRange)
+                ]
+
+          eResp <- doRequestRaw
+            RequestOptions
+              { reqMethod = PUT
+              , reqUrl = sessionUrl
+              , mbReqPath = Nothing
+              , mbReqBody = Just (BSL.fromStrict chunk)
+              , mbReqHeaders = Just headers
+              , mbQueryParams = Nothing
+              }
+
+          case eResp of
+            Left err -> pure $ Left err
+            Right resp -> do
+              let status = getResponseStatus resp
+              if status == status200
+                then pure $ Right ()  -- Finished
+                else if status == status308
+                  then uploadChunks sessionUrl (offset + BS.length chunk) rest -- Continue
+                  else pure $ Left $ "Unexpected status: " <> show status
 
 -- Helper types and functions (not exported, so no Haddock documentation needed)
 

@@ -19,6 +19,8 @@ dependencies:
 - bytestring >= 0.9.1.4
 - text >= 1.2 && <3
 - aeson < 3
+- http-types
+- http-conduit
 - google-cloud-common
 
 ghc-options:

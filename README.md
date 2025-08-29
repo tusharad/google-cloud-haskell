@@ -127,7 +127,7 @@ objectOperationsExample = do
 ### There are two ways of authentication,
 
 1. Application will look for `GOOGLE_APPLICATION_CREDENTIALS` environment variable and read the JSON file path.
-2. If the env variable is not stored, it will use `print-access-token`. Make sure gcloud is installed and logged in for this to work.
+2. If the env variable is not set, it will use [metadata server](https://cloud.google.com/docs/authentication/rest#metadata-server)
 
 ## Contributions
 Contributions are welcome! Feel free to submit PRs or open issues for discussion.

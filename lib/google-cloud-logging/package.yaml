@@ -18,6 +18,7 @@ dependencies:
 - base >= 4.7 && < 5
 - aeson < 3
 - google-cloud-common
+- bytestring >=0.9.1.4
 
 ghc-options:
 - -Wall
