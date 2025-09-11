@@ -33,6 +33,8 @@ packages:
 - .
 - ../lib/google-cloud-storage
 - ../lib/google-cloud-pubsub
+- ../lib/google-cloud-compute
+- ../lib/google-cloud-logging
 - ../lib/google-cloud-common
 # Dependency packages to be pulled from upstream that are not in the snapshot.
 # These entries can reference officially published versions as well as

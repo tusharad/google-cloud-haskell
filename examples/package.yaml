@@ -23,9 +23,11 @@ dependencies:
 - base >= 4.7 && < 5
 - google-cloud-storage
 - google-cloud-pubsub
-- text
-- bytestring
+- google-cloud-compute
+- google-cloud-logging
 - aeson
+- bytestring
+- text
 
 ghc-options:
 - -Wall

@@ -22,7 +22,6 @@ module Google.Cloud.PubSub.Topic
 import Data.Aeson
 import qualified Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as BS
-import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Map (Map)
 import GHC.Generics (Generic)
 import Google.Cloud.Common.Core
@@ -174,7 +173,3 @@ messageToPubsubMessage Message {..} =
     , publishTime = Nothing
     , orderingKey = orderingKey
     }
-
--- | Google Cloud Pub/Sub API base URL
-googlePubSubUrl :: String
-googlePubSubUrl = "https://pubsub.googleapis.com/v1"

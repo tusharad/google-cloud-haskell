@@ -75,7 +75,7 @@ data Bucket = Bucket
   -- ^ The IAM configuration of the bucket.
   , locationType :: String
   -- ^ The type of location (e.g., region).
-  , satisfiesPZI :: Bool
+  , satisfiesPZI :: Maybe Bool
   -- ^ Whether the bucket satisfies the PZI (Per-Zone Isolation) requirement.
   , hierarchicalNamespace :: Maybe HierarchicalNamespace
   -- ^ The hierarchical namespace configuration.

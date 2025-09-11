@@ -4,13 +4,13 @@ repos:
     -   id: fourmolu
         name: fourmolu
         description: "Formatter for Haskell source code."
-        entry: fourmolu -i lib
+        entry: fourmolu -i .
         language: system
         types: [haskell]
 
     -   id: hlint
         name: hlint
         description: "Linter for Haskell source code."
-        entry: hlint lib
+        entry: hlint .
         language: system
         types: [haskell]

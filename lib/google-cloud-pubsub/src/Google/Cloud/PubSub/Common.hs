@@ -10,7 +10,7 @@ Stability   : experimental
 
 Common helpers and constants for Google Cloud Pub/Sub client modules.
 -}
-module Google.Cloud.PubSub.Common (googlePubSubUrl) where
+module Google.Cloud.PubSub.Common (googlePubSubUrl, PubsubMessage (..)) where
 
 import Data.Aeson
 import Data.Map (Map)

@@ -24,8 +24,6 @@ module Google.Cloud.PubSub.Subscription
   ) where
 
 import Data.Aeson
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Map (Map)
 import GHC.Generics (Generic)
 import Google.Cloud.Common.Core
@@ -41,13 +39,13 @@ data Subscription = Subscription
   -- ^ Push configuration for the subscription.
   , ackDeadlineSeconds :: Int
   -- ^ The acknowledgment deadline in seconds.
-  , retainAckedMessages :: Bool
+  , retainAckedMessages :: Maybe Bool
   -- ^ Whether to retain acknowledged messages.
   , messageRetentionDuration :: Maybe String
   -- ^ Message retention duration.
   , labels :: Maybe (Map String String)
   -- ^ Labels for the subscription.
-  , enableMessageOrdering :: Bool
+  , enableMessageOrdering :: Maybe Bool
   -- ^ Whether message ordering is enabled.
   , expirationPolicy :: Maybe ExpirationPolicy
   -- ^ Expiration policy for the subscription.
@@ -119,13 +117,13 @@ data SubscriptionConfig = SubscriptionConfig
   -- ^ Push configuration.
   , ackDeadlineSeconds :: Int
   -- ^ Acknowledgment deadline in seconds.
-  , retainAckedMessages :: Bool
+  , retainAckedMessages :: Maybe Bool
   -- ^ Whether to retain acknowledged messages.
   , messageRetentionDuration :: Maybe String
   -- ^ Message retention duration.
   , labels :: Maybe (Map String String)
   -- ^ Labels for the subscription.
-  , enableMessageOrdering :: Bool
+  , enableMessageOrdering :: Maybe Bool
   -- ^ Whether message ordering is enabled.
   , expirationPolicy :: Maybe ExpirationPolicy
   -- ^ Expiration policy.
@@ -196,12 +194,12 @@ Example:
 Right (Subscription {name = "projects/my-project/subscriptions/my-subscription", ...})
 -}
 createSubscription :: String -> String -> SubscriptionConfig -> IO (Either String Subscription)
-createSubscription projectId subscriptionName config =
+createSubscription pId subscriptionName config =
   doRequestJSON
     RequestOptions
       { reqMethod = PUT
       , reqUrl = googlePubSubUrl
-      , mbReqPath = Just ("/projects/" <> projectId <> "/subscriptions/" <> subscriptionName)
+      , mbReqPath = Just ("/projects/" <> pId <> "/subscriptions/" <> subscriptionName)
       , mbReqBody = Just (encode config)
       , mbReqHeaders = Just [("Content-Type", "application/json")]
       , mbQueryParams = Nothing
@@ -218,12 +216,12 @@ Example:
 Right ()
 -}
 deleteSubscription :: String -> String -> IO (Either String ())
-deleteSubscription projectId subscriptionName =
+deleteSubscription pId subscriptionName =
   doRequestJSON
     RequestOptions
       { reqMethod = DELETE
       , reqUrl = googlePubSubUrl
-      , mbReqPath = Just ("/projects/" <> projectId <> "/subscriptions/" <> subscriptionName)
+      , mbReqPath = Just ("/projects/" <> pId <> "/subscriptions/" <> subscriptionName)
       , mbReqBody = Nothing
       , mbReqHeaders = Nothing
       , mbQueryParams = Nothing
@@ -241,14 +239,14 @@ Example:
 Right ()
 -}
 acknowledgeMessages :: String -> String -> [String] -> IO (Either String ())
-acknowledgeMessages projectId subscriptionName ackIds =
+acknowledgeMessages pId subscriptionName aIds =
   doRequestJSON
     RequestOptions
       { reqMethod = POST
       , reqUrl = googlePubSubUrl
       , mbReqPath =
-          Just ("/projects/" <> projectId <> "/subscriptions/" <> subscriptionName <> ":acknowledge")
-      , mbReqBody = Just (encode $ AcknowledgeRequest ackIds)
+          Just ("/projects/" <> pId <> "/subscriptions/" <> subscriptionName <> ":acknowledge")
+      , mbReqBody = Just (encode $ AcknowledgeRequest aIds)
       , mbReqHeaders = Just [("Content-Type", "application/json")]
       , mbQueryParams = Nothing
       }
@@ -265,14 +263,14 @@ Example:
 Right ()
 -}
 modifyAckDeadline :: String -> String -> [String] -> Int -> IO (Either String ())
-modifyAckDeadline projectId subscriptionName ackIds newDeadline =
+modifyAckDeadline pId subscriptionName aIds newDeadline =
   doRequestJSON
     RequestOptions
       { reqMethod = POST
       , reqUrl = googlePubSubUrl
       , mbReqPath =
-          Just ("/projects/" <> projectId <> "/subscriptions/" <> subscriptionName <> ":modifyAckDeadline")
-      , mbReqBody = Just (encode $ ModifyAckDeadlineRequest ackIds newDeadline)
+          Just ("/projects/" <> pId <> "/subscriptions/" <> subscriptionName <> ":modifyAckDeadline")
+      , mbReqBody = Just (encode $ ModifyAckDeadlineRequest aIds newDeadline)
       , mbReqHeaders = Just [("Content-Type", "application/json")]
       , mbQueryParams = Nothing
       }
@@ -289,17 +287,13 @@ Example:
 Right (PullResponse {receivedMessages = [...]})
 -}
 pullMessages :: String -> String -> Int -> IO (Either String PullResponse)
-pullMessages projectId subscriptionName maxMessages =
+pullMessages pId subscriptionName maxMsgs =
   doRequestJSON
     RequestOptions
       { reqMethod = POST
       , reqUrl = googlePubSubUrl
-      , mbReqPath = Just ("/projects/" <> projectId <> "/subscriptions/" <> subscriptionName <> ":pull")
-      , mbReqBody = Just (encode $ PullRequest maxMessages False)
+      , mbReqPath = Just ("/projects/" <> pId <> "/subscriptions/" <> subscriptionName <> ":pull")
+      , mbReqBody = Just (encode $ PullRequest maxMsgs False)
       , mbReqHeaders = Just [("Content-Type", "application/json")]
       , mbQueryParams = Nothing
       }
-
--- | Google Cloud Pub/Sub API base URL
-googlePubSubUrl :: String
-googlePubSubUrl = "https://pubsub.googleapis.com/v1"

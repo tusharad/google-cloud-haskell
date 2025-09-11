@@ -47,7 +47,7 @@ data NetworkList = NetworkList
   -- ^ Type of resource (always "compute#networkList")
   , id_ :: Text
   -- ^ Unique identifier for the resource
-  , items :: [NetworkMeta]
+  , items :: Maybe [NetworkMeta]
   -- ^ List of network resources
   , nextPageToken :: Maybe Text
   -- ^ Pagination token for next page
