@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           examples
-version:        0.1.0.0
+version:        1.1.0.0
 description:    Please see the README on GitHub at <https://github.com/tusharad/examples#readme>
 homepage:       https://github.com/tusharad/examples#readme
 bug-reports:    https://github.com/tusharad/examples/issues

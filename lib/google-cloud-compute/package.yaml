@@ -1,5 +1,5 @@
 name:                google-cloud-compute
-version:             0.1.0.0
+version:             1.1.0.0
 github:              "tusharad/google-cloud-haskell"
 license:             MIT
 author:              "tushar"
@@ -19,7 +19,7 @@ dependencies:
 - aeson < 3
 - bytestring >= 0.9.1.4
 - containers >= 0.6 && <1
-- google-cloud-common
+- google-cloud-common >= 1.1.0.0 && < 1.2.0.0
 - http-conduit >= 2.2 && < 2.4
 - text >= 1.2 && <3
 

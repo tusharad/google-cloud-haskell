@@ -16,6 +16,15 @@ A thin wrapper around Google Cloud Pub/Sub for Haskell.
 - Modify acknowledgment deadlines
 - Pull messages from subscriptions
 
+## Installation
+
+- Cabal: add to your `.cabal`
+  - `build-depends: google-cloud-pubsub == 1.1.0.0`
+- Stack: add to your `package.yaml`
+  - `dependencies: - google-cloud-pubsub == 1.1.0.0`
+
+This package depends on `google-cloud-common` for authentication and HTTP helpers.
+
 ## Usage
 
 ### Topic Operations
@@ -91,11 +100,16 @@ case deleteResult of
 
 ## Authentication
 
-This library uses the same authentication mechanism as other Google Cloud libraries. Set up authentication by:
+Authentication is handled by `google-cloud-common` and follows this order:
 
-1. Setting the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to your service account key file, or
-2. Using `gcloud auth application-default login` if running on a Google Cloud environment
+1. If `GOOGLE_APPLICATION_CREDENTIALS` is set, a Service Account JSON is used to
+   create a signed JWT which is exchanged for an access token.
+2. Otherwise, the Compute metadata server is used (suitable for GCE/GKE).
 
 ## Dependencies
 
 - `google-cloud-common` - Common functionality for Google Cloud libraries
+
+## License
+
+MIT © Contributors

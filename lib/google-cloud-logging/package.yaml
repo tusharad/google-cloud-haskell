@@ -1,5 +1,5 @@
 name:                google-cloud-logging
-version:             0.1.0.0
+version:             1.1.0.0
 github:              "tusharad/google-cloud-haskell"
 license:             MIT
 author:              "tushar"
@@ -17,7 +17,7 @@ description: GCP Logging client for Haskell
 dependencies:
 - base >= 4.7 && < 5
 - aeson < 3
-- google-cloud-common
+- google-cloud-common >= 1.1.0.0 && < 1.2.0.0
 - bytestring >=0.9.1.4
 
 ghc-options:

@@ -1,5 +1,5 @@
 name:                google-cloud-common
-version:             0.1.0.0
+version:             1.1.0.0
 github:              "tusharad/google-cloud-haskell"
 license:             MIT
 author:              "tushar"
@@ -20,8 +20,8 @@ dependencies:
 - bytestring >= 0.9.1.4
 - containers  >= 0.6 && <1
 - http-conduit >= 2.2 && < 2.4
-- jwt 
-- time
+- jwt >= 0.11 && < 0.12
+- time >= 1.9 && < 1.15
 - text >= 1.2 && <3
 
 ghc-options:

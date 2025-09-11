@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           google-cloud-pubsub
-version:        0.1.0.0
+version:        1.1.0.0
 synopsis:       GCP Pub/Sub Client for Haskell
 description:    GCP Pub/Sub topic and subscription client for Haskell.
 category:       Web
@@ -41,7 +41,7 @@ library
     , base64-bytestring
     , bytestring >=0.9.1.4
     , containers
-    , google-cloud-common
+    , google-cloud-common >=1.1.0.0 && <1.2.0.0
     , http-conduit
     , http-types
     , text >=1.2 && <3
@@ -61,7 +61,7 @@ test-suite google-cloud-pubsub-test
     , base64-bytestring
     , bytestring >=0.9.1.4
     , containers
-    , google-cloud-common
+    , google-cloud-common >=1.1.0.0 && <1.2.0.0
     , google-cloud-pubsub
     , http-conduit
     , http-types

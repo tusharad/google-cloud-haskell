@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           google-cloud-storage
-version:        0.1.0.0
+version:        1.1.0.0
 synopsis:       GCP Client for Haskell
 description:    GCP Storage bucket client for Haskell.
 category:       Web
@@ -37,7 +37,7 @@ library
       aeson <3
     , base >=4.7 && <5
     , bytestring >=0.9.1.4
-    , google-cloud-common
+    , google-cloud-common >=1.1.0.0 && <1.2.0.0
     , http-conduit
     , http-types
     , text >=1.2 && <3
@@ -55,7 +55,7 @@ test-suite google-cloud-storage-test
       aeson <3
     , base >=4.7 && <5
     , bytestring >=0.9.1.4
-    , google-cloud-common
+    , google-cloud-common >=1.1.0.0 && <1.2.0.0
     , google-cloud-storage
     , http-conduit
     , http-types
