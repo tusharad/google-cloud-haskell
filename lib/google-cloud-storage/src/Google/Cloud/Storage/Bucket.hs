@@ -14,6 +14,7 @@ module Google.Cloud.Storage.Bucket
   , StorageClass (..)
   , CreateBucketData (..)
   , CopyObjectRequest (..)
+  , CopyObjectResp (..)
   , listBuckets
   , createBucket
   , updateBucketStorageClass

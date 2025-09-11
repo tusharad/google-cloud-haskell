@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {- |
 Module      : Google.Cloud.Common.Core
@@ -243,11 +244,18 @@ getTokenFromMetadataServer = do
               "GET"
               initialRequest
           )
-  response <- httpLbs request
-  let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response)
-  case rBody of
-    Right AccessTokenResp {..} -> return . Right $ BS.pack accessToken
-    Left err -> pure $ Left err
+  eResp <- try $ httpLbs request
+  case eResp of
+    Left (_ :: HttpException) ->
+      pure $
+        Left
+          "No application credentials found and metadata server is unavailable. Set GOOGLE_APPLICATION_CREDENTIALS to a service account JSON or run on GCE/GKE with a default service account."
+    Right response -> do
+      let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response)
+      case rBody of
+        Right AccessTokenResp {..} -> return . Right $ BS.pack accessToken
+        Left _ ->
+          pure $ Left "Unexpected response from metadata server while fetching access token."
 
 -- | Custom HTTP methods used in requests.
 data RequestMethod = GET | POST | PATCH | DELETE | PUT

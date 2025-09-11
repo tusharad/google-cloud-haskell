@@ -12,6 +12,16 @@ main = hspec spec
 spec :: Spec
 spec = do
   describe "Google.Cloud.Common.Core" $ do
+    context "RequestMethod Show/Eq" $ do
+      it "shows constructors as HTTP verbs" $ do
+        show GET `shouldBe` "GET"
+        show POST `shouldBe` "POST"
+        show PATCH `shouldBe` "PATCH"
+        show DELETE `shouldBe` "DELETE"
+        show PUT `shouldBe` "PUT"
+      it "equality works for same constructor" $ do
+        (GET == GET) `shouldBe` True
+        (POST == GET) `shouldBe` False
     context "AccessTokenResp JSON parsing" $ do
       it "successfully parses valid JSON" $ do
         let json = "{\"access_token\":\"ya29.a0AfH6SM...\",\"expires_in\":3599,\"token_type\":\"Bearer\"}"

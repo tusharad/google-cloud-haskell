@@ -49,3 +49,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - google-cloud-pubsub
+    - tasty >= 1.4
+    - tasty-hunit >= 0.10

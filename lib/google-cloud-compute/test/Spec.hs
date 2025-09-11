@@ -4,6 +4,7 @@
 import Data.Aeson (decode, encode)
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Maybe (isJust)
+import Google.Cloud.Compute.Common (googleComputeUrl)
 import Google.Cloud.Compute.Disk as Disk
 import qualified Google.Cloud.Compute.Firewall as Firewall
 import Google.Cloud.Compute.Instance as Instance
@@ -14,6 +15,9 @@ main = hspec spec
 
 spec :: Spec
 spec = do
+  describe "Google.Cloud.Compute.Common" $ do
+    it "googleComputeUrl is v1 endpoint" $ do
+      googleComputeUrl `shouldBe` "https://compute.googleapis.com/compute/v1"
   describe "Google.Cloud.Compute.Disk" $ do
     context "DiskResponse JSON serialization" $ do
       it "successfully parses valid JSON to DiskResponse" $ do

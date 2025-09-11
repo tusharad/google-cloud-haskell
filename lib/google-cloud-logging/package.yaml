@@ -44,3 +44,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - google-cloud-logging
+    - tasty >= 1.4
+    - tasty-hunit >= 0.10
