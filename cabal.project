@@ -3,5 +3,6 @@ packages:
   lib/google-cloud-common
   lib/google-cloud-compute
   lib/google-cloud-logging
+  lib/google-cloud-pubsub
 
 tests: True

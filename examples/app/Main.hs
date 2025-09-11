@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Lib
+import PubSub
 
 main :: IO ()
-main = someFunc
+main = runApp
