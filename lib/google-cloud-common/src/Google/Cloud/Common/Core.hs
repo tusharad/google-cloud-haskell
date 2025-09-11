@@ -197,7 +197,7 @@ fetchAccessToken jwt = do
               (setRequestBodyLBS (BSL.fromStrict $ TE.encodeUtf8 reqBody) initialRequest)
           )
   response <- httpLbs request
-  let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response)
+  let rBody = eitherDecodeStrict (BSL.toStrict $ getResponseBody response)
   case rBody of
     Right AccessTokenResp {..} -> return (Just (BS.pack accessToken, now + 3600))
     Left err -> do
@@ -251,7 +251,7 @@ getTokenFromMetadataServer = do
         Left
           "No application credentials found and metadata server is unavailable. Set GOOGLE_APPLICATION_CREDENTIALS to a service account JSON or run on GCE/GKE with a default service account."
     Right response -> do
-      let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response)
+      let rBody = eitherDecodeStrict (BSL.toStrict $ getResponseBody response)
       case rBody of
         Right AccessTokenResp {..} -> return . Right $ BS.pack accessToken
         Left _ ->

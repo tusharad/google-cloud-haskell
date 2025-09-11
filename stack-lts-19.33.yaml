@@ -1,0 +1,8 @@
+resolver: lts-19.33
+packages:
+  - lib/google-cloud-storage
+  - lib/google-cloud-common
+  - lib/google-cloud-compute
+  - lib/google-cloud-logging
+extra-deps:
+

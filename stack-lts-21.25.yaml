@@ -1,0 +1,7 @@
+resolver: lts-21.25
+packages:
+  - lib/google-cloud-storage
+  - lib/google-cloud-common
+  - lib/google-cloud-compute
+  - lib/google-cloud-logging
+extra-deps:

@@ -31,6 +31,7 @@ module Google.Cloud.Compute.Disk
 
 import Data.Aeson
 import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Map (Map)
 import Google.Cloud.Common.Core
 import Google.Cloud.Compute.Common
@@ -611,7 +612,7 @@ insertDisk project zone_ insertDiskOps mbQuery = do
       [ maybe mempty (\x -> ("sourceImage", Just $ BS.pack x)) sourceImage
       , maybe
           mempty
-          (\x -> ("sourceImageEncryptionKey", Just . BS.toStrict $ encode x))
+          (\x -> ("sourceImageEncryptionKey", Just . BSL.toStrict $ encode x))
           sourceImageEncryptionKey
       ]
 
