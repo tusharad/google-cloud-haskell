@@ -1,10 +1,10 @@
 module PubSub (runApp) where
 
-import Google.Cloud.PubSub.Topic
 import Google.Cloud.PubSub.Subscription
+import Google.Cloud.PubSub.Topic
 
 runApp :: IO ()
-runApp = do 
+runApp = do
   -- Assuming creating topic and subscription is done
   -- void $ createTopic "haskread" "some-topic"
   -- let config = SubscriptionConfig "projects/haskread/topics/some-topic" Nothing 600 False Nothing Nothing False Nothing Nothing Nothing Nothing Nothing
