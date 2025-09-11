@@ -2,13 +2,22 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Google.Cloud.PubSub.Common
-  ( PubsubMessage (..)
-  ) where
+{- |
+Module      : Google.Cloud.PubSub.Common
+License     : MIT
+Maintainer  : maintainers@google-cloud-haskell
+Stability   : experimental
+
+Common helpers and constants for Google Cloud Pub/Sub client modules.
+-}
+module Google.Cloud.PubSub.Common (googlePubSubUrl) where
 
 import Data.Aeson
 import Data.Map (Map)
 import GHC.Generics (Generic)
+
+googlePubSubUrl :: String
+googlePubSubUrl = "https://pubsub.googleapis.com/v1"
 
 -- | A message to be published.
 data PubsubMessage = PubsubMessage

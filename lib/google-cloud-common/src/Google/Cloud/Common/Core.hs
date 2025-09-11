@@ -2,24 +2,40 @@
 {-# LANGUAGE RecordWildCards #-}
 
 {- |
-Google.Cloud.Common.Core . This module contains function and types which are being shared
-among all GCP client packages.
-|
+Module      : Google.Cloud.Common.Core
+License     : MIT
+Maintainer  : maintainers@google-cloud-haskell
+Stability   : experimental
+
+Shared functionality and types used across Google Cloud client packages.
+
+This module provides:
+
+- Access token generation using either application credentials or metadata server
+- A thin HTTP request layer with JSON helpers
+- Shared request option types and utilities
+- Convenience helpers for path building
 -}
 module Google.Cloud.Common.Core
-  ( genAccessToken
+  ( -- * Authentication
+    genAccessToken
+
+    -- * Request API
   , RequestOptions (..)
   , RequestMethod (..)
-  , AccessTokenResp (..)
-  , GoogleApplicationCred (..)
   , doRequest
   , doRequestJSON
   , doRequestRaw
+
+    -- * Types
+  , AccessTokenResp (..)
+  , GoogleApplicationCred (..)
+
+    -- * Utilities
   , toPath
   ) where
 
 import Control.Exception (try)
-import Control.Monad.Error.Class (MonadError (throwError))
 import Data.Aeson
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
@@ -36,38 +52,58 @@ import Network.HTTP.Simple
 import System.Environment (lookupEnv)
 import qualified Web.JWT as JWT
 
+{- | Google application credential JSON as produced by a service account key.
+
+This structure corresponds to the JSON file pointed to by
+the @GOOGLE_APPLICATION_CREDENTIALS@ environment variable.
+Field names match the JSON keys, with minor adaptations for Haskell naming.
+-}
 data GoogleApplicationCred = GooGleApplicationCred
   { type_ :: Text
+  -- ^ Type of the credential (usually @service_account@)
   , projectId :: Text
+  -- ^ Project ID associated with the credential
   , privateKeyId :: Text
+  -- ^ Private key ID
   , privateKey :: Text
+  -- ^ PEM-encoded RSA private key
   , clientEmail :: Text
+  -- ^ Service account email address
   , clientId :: Text
+  -- ^ Client ID
   , authUri :: Text
+  -- ^ OAuth2 authorization URI
   , tokenUri :: Text
+  -- ^ OAuth2 token exchange URI
   , auth_provider_x509_cert_url :: Text
+  -- ^ Auth provider certificate URL
   , client_x509_cert_url :: Text
+  -- ^ Client certificate URL
   , universe_domain :: Text
+  -- ^ Universe domain
   }
   deriving (Eq, Show)
 
+-- | Response returned by OAuth2 token endpoints.
 data AccessTokenResp = AccessTokenResp
   { accessToken :: String
+  -- ^ Bearer access token
   , expiresIn :: Integer
+  -- ^ Lifetime in seconds
   , tokenType :: String
+  -- ^ Token type (usually @Bearer@)
   }
   deriving (Eq, Show)
 
 instance FromJSON AccessTokenResp where
-  parseJSON (Object v) =
+  parseJSON = withObject "AccessTokenResp" $ \v ->
     AccessTokenResp
       <$> v .: "access_token"
       <*> v .: "expires_in"
       <*> v .: "token_type"
-  parseJSON _ = error "asd"
 
 instance FromJSON GoogleApplicationCred where
-  parseJSON (Object v) =
+  parseJSON = withObject "GoogleApplicationCred" $ \v ->
     GooGleApplicationCred
       <$> v .: "type"
       <*> v .: "project_id"
@@ -80,14 +116,17 @@ instance FromJSON GoogleApplicationCred where
       <*> v .: "auth_provider_x509_cert_url"
       <*> v .: "client_x509_cert_url"
       <*> v .: "universe_domain"
-  parseJSON _ = error "asd"
 
-{- | Authentication
- - There are two ways of authentication,
-    1. Application will look for `GOOGLE_APPLICATION_CREDENTIALS` environment variable
-        and read the JSON file path.
-    2. If the env variable is not stored, it will use `print-access-token`.
-        Make sure gcloud is installed and logged in for this to work.
+{- | Generate a Google Cloud access token.
+
+Resolution order:
+
+1. If @GOOGLE_APPLICATION_CREDENTIALS@ is set, read the JSON file and
+   exchange a JWT for an OAuth2 access token.
+2. Otherwise, fetch a token from the Compute metadata server (suitable for
+   GCE/GKE environments with a default service account).
+
+Returns 'Right' token on success, or 'Left' with an error message.
 -}
 genAccessToken :: IO (Either String BS.ByteString)
 genAccessToken = do
@@ -100,16 +139,16 @@ genAccessToken = do
         Right jsonVal -> getValidToken jsonVal
     Nothing -> getTokenFromMetadataServer
 
--- Global IORef to store the token in memory
+-- | In-memory cache of the latest token and its expiry epoch seconds.
 {-# NOINLINE tokenCache #-}
 tokenCache :: IORef (Maybe (BS.ByteString, Integer))
 tokenCache = unsafePerformIO (newIORef Nothing)
 
--- Create JWT Token
+-- | Create a signed JWT for the given credential with Cloud Platform scope.
 createJWT :: GoogleApplicationCred -> IO (Maybe Text)
 createJWT GooGleApplicationCred {..} = do
   now <- round <$> getPOSIXTime :: IO Integer
-  let expiration = now + 3600 -- 1-hour expiry
+  let expiration = now + 3600 -- 1 hour expiry
   let claims =
         mempty
           { JWT.iss = JWT.stringOrURI clientEmail
@@ -142,7 +181,7 @@ createJWT GooGleApplicationCred {..} = do
             jwtHeader
             claims
 
--- Exchange JWT for OAuth2 Access Token
+-- | Exchange a JWT for an OAuth2 access token. Returns token bytes and expiry.
 fetchAccessToken :: Text -> IO (Maybe (BS.ByteString, Integer))
 fetchAccessToken jwt = do
   now <- round <$> getPOSIXTime
@@ -164,13 +203,13 @@ fetchAccessToken jwt = do
       print err
       return Nothing
 
--- Get a valid token (reuses existing one if valid)
+-- | Get a valid token, reusing a cached one if it has not expired yet.
 getValidToken :: GoogleApplicationCred -> IO (Either String BS.ByteString)
 getValidToken json_ = do
   now <- round <$> getPOSIXTime
   cached <- readIORef tokenCache
   case cached of
-    Just (token, expiry) | now < expiry -> return (Right token) -- Return cached token
+    Just (token, expiry) | now < expiry -> return (Right token)
     _ -> do
       maybeJwt <- createJWT json_
       case maybeJwt of
@@ -178,11 +217,12 @@ getValidToken json_ = do
           maybeToken <- fetchAccessToken jwt
           case maybeToken of
             Just (token, expiry) -> do
-              writeIORef tokenCache (Just (token, expiry)) -- Cache new token
+              writeIORef tokenCache (Just (token, expiry))
               return (Right token)
-            Nothing -> return $ Left "Something went wrong with token 1"
-        Nothing -> return $ Left "Something went wrong with token 2"
+            Nothing -> return $ Left "Failed to exchange JWT for access token"
+        Nothing -> return $ Left "Failed to create JWT from credentials"
 
+-- | Read and decode a JSON credentials file into 'GoogleApplicationCred'.
 readJSONFile :: FilePath -> IO (Either String GoogleApplicationCred)
 readJSONFile jsonFilePath = do
   eRes <- try $ readFile jsonFilePath
@@ -190,6 +230,7 @@ readJSONFile jsonFilePath = do
     Left err -> pure . Left $ show (err :: IOError)
     Right content -> pure $ eitherDecodeStrict (BS.pack content)
 
+-- | Fetch an access token from the metadata server (GCE/GKE default SA).
 getTokenFromMetadataServer :: IO (Either String BS.ByteString)
 getTokenFromMetadataServer = do
   initialRequest <-
@@ -208,27 +249,39 @@ getTokenFromMetadataServer = do
     Right AccessTokenResp {..} -> return . Right $ BS.pack accessToken
     Left err -> pure $ Left err
 
--- | Custom Request methods for convenience
+-- | Custom HTTP methods used in requests.
 data RequestMethod = GET | POST | PATCH | DELETE | PUT
   deriving (Eq, Show)
 
--- | A type that holds all required information for performing a network action
+{- | Options for performing an HTTP request.
+
+You can construct this record and pass it to 'doRequest' or 'doRequestJSON'.
+Unused optional fields can be 'Nothing'.
+-}
 data RequestOptions = RequestOptions
   { reqMethod :: RequestMethod
+  -- ^ HTTP method to use
   , reqUrl :: String
+  -- ^ Base URL (e.g. https://example.googleapis.com)
   , mbReqHeaders :: Maybe RequestHeaders
+  -- ^ Optional request headers
   , mbQueryParams :: Maybe Query
+  -- ^ Optional query string parameters
   , mbReqBody :: Maybe BSL.ByteString
+  -- ^ Optional lazy bytestring request body
   , mbReqPath :: Maybe String
+  -- ^ Optional path to append to 'reqUrl'
   }
   deriving (Eq, Show)
 
--- | Helper function to perform network action for given request options
+{- | Perform an HTTP request and return the raw 'Response' body on success.
+Returns a textual error on failure.
+-}
 doRequestRaw :: RequestOptions -> IO (Either String (Response BSL.ByteString))
 doRequestRaw RequestOptions {..} = do
   token <- genAccessToken
   case token of
-    Left err -> throwError (userError err)
+    Left err -> pure (Left err)
     Right tokenBS -> do
       initialRequest <- parseRequest (reqUrl <> fromMaybe "" mbReqPath)
       let request =
@@ -246,6 +299,9 @@ doRequestRaw RequestOptions {..} = do
         Left err -> pure $ Left (show (err :: HttpException))
         Right resp -> pure $ Right resp
 
+{- | Perform an HTTP request and return the response body.
+Fails with an "HTTP <status>: <body>" error if the status is non-2xx.
+-}
 doRequest :: RequestOptions -> IO (Either String BSL.ByteString)
 doRequest reqOpts = do
   eResp <- doRequestRaw reqOpts
@@ -256,9 +312,11 @@ doRequest reqOpts = do
           respBody = getResponseBody resp
       if respStatus <= 299 && respStatus >= 200
         then return $ Right respBody
-        else return $ Left (T.unpack $ decodeUtf8 respBody)
+        else return $ Left ("HTTP " <> show respStatus <> ": " <> T.unpack (decodeUtf8 respBody))
 
--- | Helper function to perform url action and return FromJSON type
+{- | Perform an HTTP request and decode the response body as JSON.
+An empty body is treated as @{}@ for convenience.
+-}
 doRequestJSON :: (FromJSON b) => RequestOptions -> IO (Either String b)
 doRequestJSON reqOpts = do
   eResp <- doRequest reqOpts
@@ -270,8 +328,12 @@ doRequestJSON reqOpts = do
         Left err -> pure $ Left err
         Right res -> pure $ Right res
 
-{- | Convenience function to return a url path paramter
-| E.g ["hello", "world"] -> /hello/world
+{- | Build a URL path from path segments.
+
+Example:
+
+>>> toPath ["hello", "world"]
+"/hello/world"
 -}
 toPath :: [String] -> String
 toPath = foldl (\acc x -> acc <> "/" <> x) ""

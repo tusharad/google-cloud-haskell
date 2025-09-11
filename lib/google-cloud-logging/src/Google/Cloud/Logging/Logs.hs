@@ -3,10 +3,18 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
 
-{- | A client module for interacting with Google Cloud Logging's log management API.
+{- |
+Module      : Google.Cloud.Logging.Logs
+License     : MIT
+Maintainer  : maintainers@google-cloud-haskell
+Stability   : experimental
 
-This module implements the v2 REST API for listing logs from GCP resources.
-For API details, see: <https://cloud.google.com/logging/docs/reference/v2/rest/v2/logs/list GCP Logging API Documentation>
+A client module for interacting with Google Cloud Logging's log management API.
+This module implements parts of the v2 REST API for listing logs and fetching
+settings.
+
+For API details, see:
+<https://cloud.google.com/logging/docs/reference/v2/rest/v2/logs/list GCP Logging API Documentation>
 -}
 module Google.Cloud.Logging.Logs
   ( listLogs

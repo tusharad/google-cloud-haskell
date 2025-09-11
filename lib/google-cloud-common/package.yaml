@@ -16,15 +16,13 @@ description: A common module for all GCP Client packages.
 
 dependencies:
 - base >= 4.7 && < 5
-- bytestring >= 0.9.1.4
-- process
-- text >= 1.2 && <3
-- http-conduit >= 2.2 && < 2.4
 - aeson < 3
-- mtl
-- time
-- jwt 
+- bytestring >= 0.9.1.4
 - containers  >= 0.6 && <1
+- http-conduit >= 2.2 && < 2.4
+- jwt 
+- time
+- text >= 1.2 && <3
 
 ghc-options:
 - -Wall
