@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-{-|
-Google.Cloud.Common.Core . This module contains function and types which are being shared 
+{- |
+Google.Cloud.Common.Core . This module contains function and types which are being shared
 among all GCP client packages.
-|-}
-
+|
+-}
 module Google.Cloud.Common.Core
   ( genAccessToken
   , RequestOptions (..)
@@ -14,8 +14,8 @@ module Google.Cloud.Common.Core
   , GoogleApplicationCred (..)
   , doRequest
   , doRequestJSON
-  , doRequestRaw 
-  , toPath 
+  , doRequestRaw
+  , toPath
   ) where
 
 import Control.Exception (try)
@@ -24,6 +24,7 @@ import Data.Aeson
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.IORef
+import qualified Data.Map.Strict as Map
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
@@ -34,7 +35,6 @@ import GHC.IO (unsafePerformIO)
 import Network.HTTP.Simple
 import System.Environment (lookupEnv)
 import qualified Web.JWT as JWT
-import qualified Data.Map.Strict as Map
 
 data GoogleApplicationCred = GooGleApplicationCred
   { type_ :: Text
@@ -116,9 +116,12 @@ createJWT GooGleApplicationCred {..} = do
           , JWT.aud = Left <$> JWT.stringOrURI tokenUri
           , JWT.exp = JWT.numericDate (fromIntegral expiration)
           , JWT.iat = JWT.numericDate (fromIntegral now)
-          , JWT.unregisteredClaims = 
-                JWT.ClaimsMap (Map.singleton "scope" 
-                            "https://www.googleapis.com/auth/cloud-platform")
+          , JWT.unregisteredClaims =
+              JWT.ClaimsMap
+                ( Map.singleton
+                    "scope"
+                    "https://www.googleapis.com/auth/cloud-platform"
+                )
           }
 
       mbPrivateKeyBS = JWT.readRsaSecret (TE.encodeUtf8 privateKey)
@@ -143,7 +146,7 @@ createJWT GooGleApplicationCred {..} = do
 fetchAccessToken :: Text -> IO (Maybe (BS.ByteString, Integer))
 fetchAccessToken jwt = do
   now <- round <$> getPOSIXTime
-  let reqBody = 
+  let reqBody =
         "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" <> jwt
   initialRequest <- parseRequest "https://oauth2.googleapis.com/token"
   let request =
@@ -154,12 +157,12 @@ fetchAccessToken jwt = do
               (setRequestBodyLBS (BSL.fromStrict $ TE.encodeUtf8 reqBody) initialRequest)
           )
   response <- httpLbs request
-  let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response) 
+  let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response)
   case rBody of
-    Right AccessTokenResp {..} -> return (Just (BS.pack accessToken, now + 3600)) 
-    Left err -> do 
-        print err
-        return Nothing
+    Right AccessTokenResp {..} -> return (Just (BS.pack accessToken, now + 3600))
+    Left err -> do
+      print err
+      return Nothing
 
 -- Get a valid token (reuses existing one if valid)
 getValidToken :: GoogleApplicationCred -> IO (Either String BS.ByteString)
@@ -188,16 +191,19 @@ readJSONFile jsonFilePath = do
     Right content -> pure $ eitherDecodeStrict (BS.pack content)
 
 getTokenFromMetadataServer :: IO (Either String BS.ByteString)
-getTokenFromMetadataServer = do 
-  initialRequest <- parseRequest "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
+getTokenFromMetadataServer = do
+  initialRequest <-
+    parseRequest
+      "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
   let request =
         setRequestHeaders
           [("Metadata-Flavor", "Google")]
-          ( setRequestMethod "GET"
+          ( setRequestMethod
+              "GET"
               initialRequest
           )
   response <- httpLbs request
-  let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response) 
+  let rBody = eitherDecodeStrict (BS.toStrict $ getResponseBody response)
   case rBody of
     Right AccessTokenResp {..} -> return . Right $ BS.pack accessToken
     Left err -> pure $ Left err
@@ -229,8 +235,7 @@ doRequestRaw RequestOptions {..} = do
             foldl
               (flip ($))
               initialRequest
-              [ 
-               maybe Prelude.id setRequestHeaders mbReqHeaders
+              [ maybe Prelude.id setRequestHeaders mbReqHeaders
               , maybe Prelude.id setRequestQueryString mbQueryParams
               , maybe Prelude.id setRequestBodyLBS mbReqBody
               , addRequestHeader "Authorization" ("Bearer " <> tokenBS)
@@ -243,15 +248,15 @@ doRequestRaw RequestOptions {..} = do
 
 doRequest :: RequestOptions -> IO (Either String BSL.ByteString)
 doRequest reqOpts = do
-      eResp <- doRequestRaw reqOpts       
-      case eResp of
-        Left err -> pure $ Left err
-        Right resp -> do
-          let respStatus = getResponseStatusCode resp
-              respBody = getResponseBody resp
-          if respStatus <= 299 && respStatus >= 200
-            then return $ Right respBody
-            else return $ Left (T.unpack $ decodeUtf8 respBody)
+  eResp <- doRequestRaw reqOpts
+  case eResp of
+    Left err -> pure $ Left err
+    Right resp -> do
+      let respStatus = getResponseStatusCode resp
+          respBody = getResponseBody resp
+      if respStatus <= 299 && respStatus >= 200
+        then return $ Right respBody
+        else return $ Left (T.unpack $ decodeUtf8 respBody)
 
 -- | Helper function to perform url action and return FromJSON type
 doRequestJSON :: (FromJSON b) => RequestOptions -> IO (Either String b)
@@ -265,7 +270,8 @@ doRequestJSON reqOpts = do
         Left err -> pure $ Left err
         Right res -> pure $ Right res
 
--- | Convenience function to return a url path paramter 
--- | E.g ["hello", "world"] -> /hello/world
+{- | Convenience function to return a url path paramter
+| E.g ["hello", "world"] -> /hello/world
+-}
 toPath :: [String] -> String
 toPath = foldl (\acc x -> acc <> "/" <> x) ""

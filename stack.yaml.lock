@@ -5,6 +5,13 @@
 
 packages:
 - completed:
+    hackage: cryptonite-0.30@sha256:12c85dea7be63e5ad90bcb487eb3846bf3c413347f94336fa1dede7b28f9936a,18301
+    pantry-tree:
+      sha256: df1cbe4cc40d569cc75ffed40bc5deac43cb085653980b42b9b6a5d4b745a30a
+      size: 23323
+  original:
+    hackage: cryptonite-0.30@sha256:12c85dea7be63e5ad90bcb487eb3846bf3c413347f94336fa1dede7b28f9936a,18301
+- completed:
     hackage: jwt-0.11.0@sha256:0602735ee4093c6c5bc918461855bcd55499099363bad34eb7a227aeef3cde29,4265
     pantry-tree:
       sha256: 0b3155d79cc7d44285762b2012debe8ec70ac377163a8e5f29581bacaf50179e
@@ -41,7 +48,7 @@ packages:
     hackage: x509-validation-1.6.12@sha256:4f4af20ec77f02c042ecd4726c195bb0e0b694b336de81e7bd4515b2917bd9bc,2169
 snapshots:
 - completed:
-    sha256: a243ece07ce62348f5018c471d84e7056b537c69c309a0cfa997ccdde6ec3b9c
-    size: 666182
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/3/24.yaml
-  original: nightly-2025-03-24
+    sha256: e095131a8c060d395ded50b53dcec91e11131e98e6fb7e7a921455d1cb5c7ed0
+    size: 692467
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/9/11.yaml
+  original: nightly-2025-09-11

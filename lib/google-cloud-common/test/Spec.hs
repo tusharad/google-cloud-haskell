@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Test.Hspec
-import Google.Cloud.Common.Core
 import Data.Aeson (decode)
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Maybe (isJust)
+import Google.Cloud.Common.Core
+import Test.Hspec
 
 main :: IO ()
 main = hspec spec
@@ -25,7 +25,8 @@ spec = do
 
     context "GoogleApplicationCred JSON parsing" $ do
       it "successfully parses valid JSON" $ do
-        let json = "{\"type\":\"service_account\",\"project_id\":\"my-project\",\"private_key_id\":\"1234\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n\",\"client_email\":\"my-email@my-project.iam.gserviceaccount.com\",\"client_id\":\"123456789\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_x509_cert_url\":\"https://www.googleapis.com/robot/v1/metadata/x509/my-email%40my-project.iam.gserviceaccount.com\",\"universe_domain\":\"googleapis.com\"}"
+        let json =
+              "{\"type\":\"service_account\",\"project_id\":\"my-project\",\"private_key_id\":\"1234\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n\",\"client_email\":\"my-email@my-project.iam.gserviceaccount.com\",\"client_id\":\"123456789\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_x509_cert_url\":\"https://www.googleapis.com/robot/v1/metadata/x509/my-email%40my-project.iam.gserviceaccount.com\",\"universe_domain\":\"googleapis.com\"}"
         let parsed = decode (BSL.pack json) :: Maybe GoogleApplicationCred
         parsed `shouldSatisfy` isJust
 

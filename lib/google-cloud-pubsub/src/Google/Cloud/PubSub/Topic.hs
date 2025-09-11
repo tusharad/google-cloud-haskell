@@ -4,8 +4,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
--- | This module provides functions for interacting with Google Cloud Pub/Sub topics.
--- It includes functionality for creating, deleting topics, and publishing messages.
+{- | This module provides functions for interacting with Google Cloud Pub/Sub topics.
+It includes functionality for creating, deleting topics, and publishing messages.
+-}
 module Google.Cloud.PubSub.Topic
   ( Topic (..)
   , PublishRequest (..)
@@ -29,61 +30,80 @@ import Google.Cloud.PubSub.Common
 
 -- | Represents a Pub/Sub topic.
 data Topic = Topic
-  { name :: String  -- ^ The name of the topic in the format projects/{project}/topics/{topic}.
-  , kmsKeyName :: Maybe String  -- ^ The KMS key name for encryption, if any.
-  , messageStoragePolicy :: Maybe MessageStoragePolicy  -- ^ The message storage policy.
-  , labels :: Maybe (Map String String)  -- ^ Labels for the topic.
-  , messageRetentionDuration :: Maybe String  -- ^ Message retention duration.
-  , state :: Maybe String  -- ^ The state of the topic.
-  , satisfiesPzs :: Maybe Bool  -- ^ Whether the topic satisfies PZS requirements.
-  , schemaSettings :: Maybe SchemaSettings  -- ^ Schema settings for the topic.
+  { name :: String
+  -- ^ The name of the topic in the format projects/{project}/topics/{topic}.
+  , kmsKeyName :: Maybe String
+  -- ^ The KMS key name for encryption, if any.
+  , messageStoragePolicy :: Maybe MessageStoragePolicy
+  -- ^ The message storage policy.
+  , labels :: Maybe (Map String String)
+  -- ^ Labels for the topic.
+  , messageRetentionDuration :: Maybe String
+  -- ^ Message retention duration.
+  , state :: Maybe String
+  -- ^ The state of the topic.
+  , satisfiesPzs :: Maybe Bool
+  -- ^ Whether the topic satisfies PZS requirements.
+  , schemaSettings :: Maybe SchemaSettings
+  -- ^ Schema settings for the topic.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
 -- | Message storage policy for a topic.
-data MessageStoragePolicy = MessageStoragePolicy
-  { allowedPersistenceRegions :: [String]  -- ^ Allowed regions for message persistence.
+newtype MessageStoragePolicy = MessageStoragePolicy
+  { allowedPersistenceRegions :: [String]
+  -- ^ Allowed regions for message persistence.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
 -- | Schema settings for a topic.
 data SchemaSettings = SchemaSettings
-  { schema :: String  -- ^ The schema name.
-  , encoding :: String  -- ^ The encoding type (JSON or BINARY).
-  , firstRevisionId :: Maybe String  -- ^ First revision ID.
-  , lastRevisionId :: Maybe String  -- ^ Last revision ID.
+  { schema :: String
+  -- ^ The schema name.
+  , encoding :: String
+  -- ^ The encoding type (JSON or BINARY).
+  , firstRevisionId :: Maybe String
+  -- ^ First revision ID.
+  , lastRevisionId :: Maybe String
+  -- ^ Last revision ID.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
 -- | Request to publish messages to a topic.
-data PublishRequest = PublishRequest
-  { messages :: [PubsubMessage]  -- ^ The messages to publish.
+newtype PublishRequest = PublishRequest
+  { messages :: [PubsubMessage]
+  -- ^ The messages to publish.
   }
   deriving (Show, Generic, ToJSON)
 
 -- | Response from publishing messages.
-data PublishResponse = PublishResponse
-  { messageIds :: [String]  -- ^ The message IDs of the published messages.
+newtype PublishResponse = PublishResponse
+  { messageIds :: [String]
+  -- ^ The message IDs of the published messages.
   }
   deriving (Show, Generic, FromJSON)
 
 -- | Simplified message structure for easier usage.
 data Message = Message
-  { content :: String  -- ^ The message content.
-  , attributes :: Maybe (Map String String)  -- ^ Optional attributes for the message.
-  , orderingKey :: Maybe String  -- ^ The ordering key for the message.
+  { content :: String
+  -- ^ The message content.
+  , attributes :: Maybe (Map String String)
+  -- ^ Optional attributes for the message.
+  , orderingKey :: Maybe String
+  -- ^ The ordering key for the message.
   }
   deriving (Show, Generic)
 
--- | Creates a new topic in Google Cloud Pub/Sub.
---
--- @createTopic projectId topicName@ creates a new topic with the specified name
--- in the given project. It returns either an error message or the created 'Topic'.
---
--- Example:
---
--- >>> createTopic "my-project" "my-topic"
--- Right (Topic {name = "projects/my-project/topics/my-topic", ...})
+{- | Creates a new topic in Google Cloud Pub/Sub.
+
+@createTopic projectId topicName@ creates a new topic with the specified name
+in the given project. It returns either an error message or the created 'Topic'.
+
+Example:
+
+>>> createTopic "my-project" "my-topic"
+Right (Topic {name = "projects/my-project/topics/my-topic", ...})
+-}
 createTopic :: String -> String -> IO (Either String Topic)
 createTopic projectId topicName =
   doRequestJSON
@@ -96,15 +116,16 @@ createTopic projectId topicName =
       , mbQueryParams = Nothing
       }
 
--- | Deletes a topic from Google Cloud Pub/Sub.
---
--- @deleteTopic projectId topicName@ deletes the specified topic.
--- It returns either an error message or a unit value indicating success.
---
--- Example:
---
--- >>> deleteTopic "my-project" "my-topic"
--- Right ()
+{- | Deletes a topic from Google Cloud Pub/Sub.
+
+@deleteTopic projectId topicName@ deletes the specified topic.
+It returns either an error message or a unit value indicating success.
+
+Example:
+
+>>> deleteTopic "my-project" "my-topic"
+Right ()
+-}
 deleteTopic :: String -> String -> IO (Either String ())
 deleteTopic projectId topicName =
   doRequestJSON
@@ -117,17 +138,18 @@ deleteTopic projectId topicName =
       , mbQueryParams = Nothing
       }
 
--- | Publishes messages to a topic.
---
--- @publishMessage projectId topicName messages@ publishes the given messages
--- to the specified topic. It returns either an error message or a 'PublishResponse'
--- containing the message IDs.
---
--- Example:
---
--- >>> let messages = [Message "Hello World" Nothing Nothing]
--- >>> publishMessage "my-project" "my-topic" messages
--- Right (PublishResponse {messageIds = ["1234567890"]})
+{- | Publishes messages to a topic.
+
+@publishMessage projectId topicName messages@ publishes the given messages
+to the specified topic. It returns either an error message or a 'PublishResponse'
+containing the message IDs.
+
+Example:
+
+>>> let messages = [Message "Hello World" Nothing Nothing]
+>>> publishMessage "my-project" "my-topic" messages
+Right (PublishResponse {messageIds = ["1234567890"]})
+-}
 publishMessage :: String -> String -> [Message] -> IO (Either String PublishResponse)
 publishMessage projectId topicName messages = do
   let pubsubMessages = map messageToPubsubMessage messages

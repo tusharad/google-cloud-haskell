@@ -4,9 +4,9 @@
 
 {- |
 Module      : Google.Cloud.Compute.Firewall
-Copyright   : (c) 2025 
+Copyright   : (c) 2025
 License     : MIT
-Maintainer  : 
+Maintainer  :
 Stability   : experimental
 
 This module provides a Haskell client for Google Cloud Compute Engine Firewall operations.
@@ -165,7 +165,7 @@ data Operation = Operation
   deriving (Show, Eq)
 
 -- | Error information from failed operations
-data OperationError = OperationError
+newtype OperationError = OperationError
   { errors :: [ErrorDetail]
   -- ^ List of error details
   }
@@ -477,7 +477,7 @@ data ListFirewallsQuery = ListFirewallsQuery
   deriving (Show, Eq)
 
 -- | Query parameters for createFirewall
-data CreateFirewallQuery = CreateFirewallQuery
+newtype CreateFirewallQuery = CreateFirewallQuery
   { requestId :: Maybe String
   }
   deriving (Show, Eq)
@@ -558,15 +558,16 @@ createFirewall project createFirewallOps mbQuery = do
       catMaybes
         [("requestId",) <$> requestId q]
 
--- | Default firewall creation options
---
--- Creates minimal valid configuration with required name.
--- Additional fields can be added using record update syntax:
---
--- > defaultCreateFirewallOps "web-allow" 
--- >   { description = Just "Allow web traffic"
--- >   , allowed = Just [AllowedFirewall "tcp" (Just ["80","443"])]
--- >   }
+{- | Default firewall creation options
+
+Creates minimal valid configuration with required name.
+Additional fields can be added using record update syntax:
+
+> defaultCreateFirewallOps "web-allow"
+>   { description = Just "Allow web traffic"
+>   , allowed = Just [AllowedFirewall "tcp" (Just ["80","443"])]
+>   }
+-}
 defaultCreateFirewallOps :: String -> CreateFirewallOps
 defaultCreateFirewallOps firewallName =
   CreateFirewallOps

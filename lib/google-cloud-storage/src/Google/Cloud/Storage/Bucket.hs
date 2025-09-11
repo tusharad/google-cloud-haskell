@@ -4,9 +4,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
--- | This module provides functions for interacting with Google Cloud Storage buckets and objects.
--- It includes functionality for listing, creating, updating, and deleting buckets, as well as
--- copying, deleting, downloading, and uploading objects.
+{- | This module provides functions for interacting with Google Cloud Storage buckets and objects.
+It includes functionality for listing, creating, updating, and deleting buckets, as well as
+copying, deleting, downloading, and uploading objects.
+-}
 module Google.Cloud.Storage.Bucket
   ( Buckets (..)
   , Location (..)
@@ -26,74 +27,103 @@ module Google.Cloud.Storage.Bucket
   ) where
 
 import Data.Aeson
-import Network.HTTP.Types (status200, status308)
-import Network.HTTP.Simple
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import GHC.Generics (Generic)
-import Google.Cloud.Common.Core 
+import Google.Cloud.Common.Core
+import Network.HTTP.Simple
+import Network.HTTP.Types (status200, status308)
 
 -- | Represents a list of buckets in a Google Cloud Storage project.
 data Buckets = Buckets
-  { kind :: String  -- ^ The kind of item this is. For buckets, this is always "storage#buckets".
-  , items :: [Bucket]  -- ^ The list of buckets.
+  { kind :: String
+  -- ^ The kind of item this is. For buckets, this is always "storage#buckets".
+  , items :: [Bucket]
+  -- ^ The list of buckets.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
 -- | Represents a single bucket in Google Cloud Storage.
 data Bucket = Bucket
-  { kind :: String  -- ^ The kind of item this is. For buckets, this is always "storage#bucket".
-  , selfLink :: String  -- ^ The URL of this bucket.
-  , id :: String  -- ^ The ID of the bucket.
-  , name :: String  -- ^ The name of the bucket.
-  , projectNumber :: String  -- ^ The project number of the project the bucket belongs to.
-  , generation :: String  -- ^ The generation of this bucket.
-  , metageneration :: String  -- ^ The metadata generation of this bucket.
-  , location :: String  -- ^ The location of the bucket.
-  , storageClass :: String  -- ^ The storage class of the bucket.
-  , etag :: String  -- ^ The entity tag for this bucket.
-  , timeCreated :: String  -- ^ The creation time of the bucket.
-  , updated :: String  -- ^ The last modification time of the bucket.
-  , softDeletePolicy :: SoftDeletePolicy  -- ^ The soft delete policy of the bucket.
-  , iamConfiguration :: IAMConfiguration  -- ^ The IAM configuration of the bucket.
-  , locationType :: String  -- ^ The type of location (e.g., region).
-  , satisfiesPZI :: Bool  -- ^ Whether the bucket satisfies the PZI (Per-Zone Isolation) requirement.
-  , hierarchicalNamespace :: Maybe HierarchicalNamespace  -- ^ The hierarchical namespace configuration.
+  { kind :: String
+  -- ^ The kind of item this is. For buckets, this is always "storage#bucket".
+  , selfLink :: String
+  -- ^ The URL of this bucket.
+  , id :: String
+  -- ^ The ID of the bucket.
+  , name :: String
+  -- ^ The name of the bucket.
+  , projectNumber :: String
+  -- ^ The project number of the project the bucket belongs to.
+  , generation :: String
+  -- ^ The generation of this bucket.
+  , metageneration :: String
+  -- ^ The metadata generation of this bucket.
+  , location :: String
+  -- ^ The location of the bucket.
+  , storageClass :: String
+  -- ^ The storage class of the bucket.
+  , etag :: String
+  -- ^ The entity tag for this bucket.
+  , timeCreated :: String
+  -- ^ The creation time of the bucket.
+  , updated :: String
+  -- ^ The last modification time of the bucket.
+  , softDeletePolicy :: SoftDeletePolicy
+  -- ^ The soft delete policy of the bucket.
+  , iamConfiguration :: IAMConfiguration
+  -- ^ The IAM configuration of the bucket.
+  , locationType :: String
+  -- ^ The type of location (e.g., region).
+  , satisfiesPZI :: Bool
+  -- ^ Whether the bucket satisfies the PZI (Per-Zone Isolation) requirement.
+  , hierarchicalNamespace :: Maybe HierarchicalNamespace
+  -- ^ The hierarchical namespace configuration.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
 -- | Represents the soft delete policy of a bucket.
 data SoftDeletePolicy = SoftDeletePolicy
-  { retentionDurationSeconds :: String  -- ^ The duration in seconds that soft-deleted objects are retained.
-  , effectiveTime :: String  -- ^ The time from which the policy was enforced.
+  { retentionDurationSeconds :: String
+  -- ^ The duration in seconds that soft-deleted objects are retained.
+  , effectiveTime :: String
+  -- ^ The time from which the policy was enforced.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
 -- | Represents the IAM configuration of a bucket.
 data IAMConfiguration = IAMConfiguration
-  { bucketPolicyOnly :: BucketPolicyOnly  -- ^ The Bucket Policy Only configuration.
-  , uniformBucketLevelAccess :: UniformBucketLevelAccess  -- ^ The Uniform Bucket-Level Access configuration.
-  , publicAccessPrevention :: String  -- ^ The public access prevention status.
+  { bucketPolicyOnly :: BucketPolicyOnly
+  -- ^ The Bucket Policy Only configuration.
+  , uniformBucketLevelAccess :: UniformBucketLevelAccess
+  -- ^ The Uniform Bucket-Level Access configuration.
+  , publicAccessPrevention :: String
+  -- ^ The public access prevention status.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
 -- | Represents the Bucket Policy Only configuration.
 data BucketPolicyOnly = BucketPolicyOnly
-  { enabled :: Bool  -- ^ Whether Bucket Policy Only is enabled.
-  , lockedTime :: Maybe String  -- ^ The time when the configuration was locked, if applicable.
+  { enabled :: Bool
+  -- ^ Whether Bucket Policy Only is enabled.
+  , lockedTime :: Maybe String
+  -- ^ The time when the configuration was locked, if applicable.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
 -- | Represents the Uniform Bucket-Level Access configuration.
 data UniformBucketLevelAccess = UniformBucketLevelAccess
-  { enabled :: Bool  -- ^ Whether Uniform Bucket-Level Access is enabled.
-  , lockedTime :: Maybe String  -- ^ The time when the configuration was locked, if applicable.
+  { enabled :: Bool
+  -- ^ Whether Uniform Bucket-Level Access is enabled.
+  , lockedTime :: Maybe String
+  -- ^ The time when the configuration was locked, if applicable.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
 -- | Represents the hierarchical namespace configuration of a bucket.
 newtype HierarchicalNamespace = HierarchicalNamespace
-  { enabled :: Bool  -- ^ Whether hierarchical namespace is enabled.
+  { enabled :: Bool
+  -- ^ Whether hierarchical namespace is enabled.
   }
   deriving (Show, Generic, FromJSON, ToJSON)
 
@@ -106,44 +136,62 @@ instance Show Location where
 
 -- | Represents the storage class of a bucket or object.
 data StorageClass
-  = STANDARD  -- ^ Standard storage class, for frequently accessed data.
-  | NEARLINE  -- ^ Nearline storage class, for infrequently accessed data.
-  | COLDLINE  -- ^ Coldline storage class, for rarely accessed data.
-  | ARCHIVE   -- ^ Archive storage class, for long-term data archiving.
+  = -- | Standard storage class, for frequently accessed data.
+    STANDARD
+  | -- | Nearline storage class, for infrequently accessed data.
+    NEARLINE
+  | -- | Coldline storage class, for rarely accessed data.
+    COLDLINE
+  | -- | Archive storage class, for long-term data archiving.
+    ARCHIVE
   deriving (Eq, Show)
 
 -- | Data required to create a new bucket.
 data CreateBucketData = CreateBucketData
-  { name :: String  -- ^ The name of the bucket to create.
-  , location :: Location  -- ^ The location where the bucket will be created.
-  , storageClass :: StorageClass  -- ^ The storage class for the bucket.
-  , projectId :: String  -- ^ The ID of the project in which to create the bucket.
+  { name :: String
+  -- ^ The name of the bucket to create.
+  , location :: Location
+  -- ^ The location where the bucket will be created.
+  , storageClass :: StorageClass
+  -- ^ The storage class for the bucket.
+  , projectId :: String
+  -- ^ The ID of the project in which to create the bucket.
   }
   deriving (Show)
 
 -- | Request data for copying an object.
 data CopyObjectRequest = CopyObjectRequest
-  { sourceBucketName :: String  -- ^ The name of the source bucket.
-  , sourceObjectName :: String  -- ^ The name of the source object.
-  , destinationBucketName :: String  -- ^ The name of the destination bucket.
-  , destinationObject :: String  -- ^ The name of the destination object.
+  { sourceBucketName :: String
+  -- ^ The name of the source bucket.
+  , sourceObjectName :: String
+  -- ^ The name of the source object.
+  , destinationBucketName :: String
+  -- ^ The name of the destination bucket.
+  , destinationObject :: String
+  -- ^ The name of the destination object.
   }
   deriving (Show, Generic)
 
 -- | Response data for copying an object.
 data CopyObjectResp = CopyObjectResp
-  { kind :: String  -- ^ The kind of item this is.
-  , totalBytesRewritten :: String  -- ^ The total number of bytes rewritten.
-  , objectSize :: String  -- ^ The size of the object.
-  , done :: Bool  -- ^ Whether the copy operation is complete.
-  , rewriteToken :: Maybe String  -- ^ Token for continuing the rewrite operation, if not done.
+  { kind :: String
+  -- ^ The kind of item this is.
+  , totalBytesRewritten :: String
+  -- ^ The total number of bytes rewritten.
+  , objectSize :: String
+  -- ^ The size of the object.
+  , done :: Bool
+  -- ^ Whether the copy operation is complete.
+  , rewriteToken :: Maybe String
+  -- ^ Token for continuing the rewrite operation, if not done.
   }
   deriving (Show, Eq, Generic, FromJSON)
 
--- | Lists all buckets in a given project.
---
--- @listBuckets projectId@ makes a request to list all buckets in the specified @projectId@.
--- It returns either an error message or a 'Buckets' object containing the list of buckets.
+{- | Lists all buckets in a given project.
+
+@listBuckets projectId@ makes a request to list all buckets in the specified @projectId@.
+It returns either an error message or a 'Buckets' object containing the list of buckets.
+-}
 listBuckets :: String -> IO (Either String Buckets)
 listBuckets projectId =
   doRequestJSON
@@ -156,10 +204,11 @@ listBuckets projectId =
       , mbReqPath = Nothing
       }
 
--- | Creates a new bucket in Google Cloud Storage.
---
--- @createBucket createBucketData@ creates a new bucket with the specified name, location,
--- storage class, and project ID. It returns either an error message or a unit value indicating success.
+{- | Creates a new bucket in Google Cloud Storage.
+
+@createBucket createBucketData@ creates a new bucket with the specified name, location,
+storage class, and project ID. It returns either an error message or a unit value indicating success.
+-}
 createBucket :: CreateBucketData -> IO (Either String ())
 createBucket CreateBucketData {..} =
   doRequestJSON
@@ -172,15 +221,16 @@ createBucket CreateBucketData {..} =
       , mbQueryParams = Just [("project", Just (BS.pack projectId))]
       }
 
--- | Updates the storage class of an existing bucket.
---
--- @updateBucketStorageClass bucketName newStorageClass@ updates the storage class of the
--- specified bucket to @newStorageClass@. It returns either an error message or a unit value
--- indicating success.
--- -- Example:
---
--- >>> updateBucketStorageClass "my-bucket" COLDLINE
--- Right ()
+{- | Updates the storage class of an existing bucket.
+
+@updateBucketStorageClass bucketName newStorageClass@ updates the storage class of the
+specified bucket to @newStorageClass@. It returns either an error message or a unit value
+indicating success.
+-- Example:
+
+>>> updateBucketStorageClass "my-bucket" COLDLINE
+Right ()
+-}
 updateBucketStorageClass :: String -> StorageClass -> IO (Either String ())
 updateBucketStorageClass bucketName newStorageClass =
   doRequestJSON
@@ -193,14 +243,15 @@ updateBucketStorageClass bucketName newStorageClass =
       , mbQueryParams = Just [("fields", Just "storageClass")]
       }
 
--- | Fetches the metadata of a specific bucket.
---
--- @fetchBucket bucketName@ retrieves the metadata for the bucket with the given name.
--- It returns either an error message or the 'Bucket' object.
--- Example:
---
--- >>> fetchBucket "my-bucket"
--- Right (Bucket {name = "my-bucket", ...})
+{- | Fetches the metadata of a specific bucket.
+
+@fetchBucket bucketName@ retrieves the metadata for the bucket with the given name.
+It returns either an error message or the 'Bucket' object.
+Example:
+
+>>> fetchBucket "my-bucket"
+Right (Bucket {name = "my-bucket", ...})
+-}
 fetchBucket :: String -> IO (Either String Bucket)
 fetchBucket bucketName =
   doRequestJSON
@@ -213,17 +264,18 @@ fetchBucket bucketName =
       , mbQueryParams = Nothing
       }
 
--- | Copies an object from one bucket to another.
---
--- @copyObject copyObjectRequest@ copies the specified source object to the destination bucket
--- and object name. For large objects, this function handles the copy in multiple requests
--- using rewrite tokens. It returns either an error message or a 'CopyObjectResp' indicating
--- the status of the copy operation.
--- Example:
---
--- >>> let request = CopyObjectRequest "source-bucket" "source-object" "destination-bucket" "destination-object"
--- >>> copyObject request
--- Right (CopyObjectResp {kind = "storage#object", totalBytesRewritten = "12345", objectSize = "12345", done = True, rewriteToken = Nothing})
+{- | Copies an object from one bucket to another.
+
+@copyObject copyObjectRequest@ copies the specified source object to the destination bucket
+and object name. For large objects, this function handles the copy in multiple requests
+using rewrite tokens. It returns either an error message or a 'CopyObjectResp' indicating
+the status of the copy operation.
+Example:
+
+>>> let request = CopyObjectRequest "source-bucket" "source-object" "destination-bucket" "destination-object"
+>>> copyObject request
+Right (CopyObjectResp {kind = "storage#object", totalBytesRewritten = "12345", objectSize = "12345", done = True, rewriteToken = Nothing})
+-}
 copyObject :: CopyObjectRequest -> IO (Either String CopyObjectResp)
 copyObject CopyObjectRequest {..} = do
   go Nothing
@@ -260,14 +312,15 @@ copyObject CopyObjectRequest {..} = do
             else do
               go (Just (rewriteToken resp))
 
--- | Deletes an object from a bucket.
---
--- @deleteObject bucketName objectName@ deletes the specified object from the given bucket.
--- It returns either an error message or a unit value indicating success.
--- Example:
---
--- >>> deleteObject "my-bucket" "my-object"
--- Right ()
+{- | Deletes an object from a bucket.
+
+@deleteObject bucketName objectName@ deletes the specified object from the given bucket.
+It returns either an error message or a unit value indicating success.
+Example:
+
+>>> deleteObject "my-bucket" "my-object"
+Right ()
+-}
 deleteObject :: String -> String -> IO (Either String ())
 deleteObject bucketName objectName =
   doRequestJSON
@@ -280,15 +333,16 @@ deleteObject bucketName objectName =
       , mbQueryParams = Nothing
       }
 
--- | Deletes a bucket.
---
--- @deleteBucket bucketName@ deletes the specified bucket. Note that the bucket must be empty
--- before it can be deleted. It returns either an error message or a unit value indicating success.
---
--- Example:
---
--- >>> deleteBucket "my-bucket"
--- Right ()
+{- | Deletes a bucket.
+
+@deleteBucket bucketName@ deletes the specified bucket. Note that the bucket must be empty
+before it can be deleted. It returns either an error message or a unit value indicating success.
+
+Example:
+
+>>> deleteBucket "my-bucket"
+Right ()
+-}
 deleteBucket :: String -> IO (Either String ())
 deleteBucket bucketName =
   doRequestJSON
@@ -301,45 +355,49 @@ deleteBucket bucketName =
       , mbQueryParams = Nothing
       }
 
--- | Downloads an object from a bucket to a local file.
---
--- @downloadObject bucketName objectName saveLocation@ returns the specified object in
--- lazy bytestring format. It returns either an error message or content indicating success.
--- Note: This function downloads the entire object at once; for large objects, consider
--- implementing streaming or slicing (planned for future versions).
--- Example:
---
--- >>> downloadObject "my-bucket" "my-object"
--- Right (bytestring content)
+{- | Downloads an object from a bucket to a local file.
+
+@downloadObject bucketName objectName saveLocation@ returns the specified object in
+lazy bytestring format. It returns either an error message or content indicating success.
+Note: This function downloads the entire object at once; for large objects, consider
+implementing streaming or slicing (planned for future versions).
+Example:
+
+>>> downloadObject "my-bucket" "my-object"
+Right (bytestring content)
+-}
 downloadObject :: String -> String -> IO (Either String BSL.ByteString)
 downloadObject bucketName objectName = go 0 mempty
   where
     chunkSize :: Int
-    chunkSize = 1024 * 1024  -- 1 MB per chunk (tune as needed)
-
+    chunkSize = 1024 * 1024 -- 1 MB per chunk (tune as needed)
     go :: Int -> BSL.ByteString -> IO (Either String BSL.ByteString)
     go offset acc = do
-      let rangeHeader = ("Range", BS.pack $ 
-                            "bytes=" <> show offset <> "-" <> show (offset + chunkSize - 1))
+      let rangeHeader =
+            ( "Range"
+            , BS.pack $
+                "bytes=" <> show offset <> "-" <> show (offset + chunkSize - 1)
+            )
           reqOpts =
-                RequestOptions { 
-                    reqMethod = GET
-                  , reqUrl = googleStorageUrl
-                  , mbReqPath = Just $ "/" <> bucketName <> "/o/" <> objectName
-                  , mbReqHeaders = Just [rangeHeader]
-                  , mbQueryParams = Just [("alt", Just "media")]
-                  , mbReqBody = Nothing
-                  }
+            RequestOptions
+              { reqMethod = GET
+              , reqUrl = googleStorageUrl
+              , mbReqPath = Just $ "/" <> bucketName <> "/o/" <> objectName
+              , mbReqHeaders = Just [rangeHeader]
+              , mbQueryParams = Just [("alt", Just "media")]
+              , mbReqBody = Nothing
+              }
       eBody <- doRequest reqOpts
       case eBody of
         Left err -> pure $ Left err
         Right body -> do
           let len = fromIntegral (BSL.length body)
           if len < chunkSize
-            then pure $ Right $ (acc `BSL.append` body)  -- last chunk
-            else do 
-              print("donwloded so far: " :: String, offset+chunkSize)
-              go (offset + chunkSize) (acc `BSL.append` body)  
+            then pure $ Right (acc `BSL.append` body) -- last chunk
+            else do
+              print ("donwloded so far: " :: String, offset + chunkSize)
+              go (offset + chunkSize) (acc `BSL.append` body)
+
 --
 -- @uploadObject bucketName objectName objectContent@ uploads the given content to the specified
 -- object in the bucket. It returns either an error message or a unit value indicating success.
@@ -352,31 +410,37 @@ downloadObject bucketName objectName = go 0 mempty
 uploadObject :: String -> String -> BSL.ByteString -> IO (Either String ())
 uploadObject = resumableUploadObject
 
--- | Initiates a resumable upload session.
---
--- Returns the resumable session URL (from the Location header) which can be
--- used to upload chunks of the object.
+{- | Initiates a resumable upload session.
+
+Returns the resumable session URL (from the Location header) which can be
+used to upload chunks of the object.
+-}
 initResumableUpload :: String -> String -> IO (Either String String)
 initResumableUpload bucketName objectName = do
-  eResp <- doRequestRaw
-    RequestOptions
-      { reqMethod = POST
-      , reqUrl = "https://storage.googleapis.com/upload/storage/v1/b"
-      , mbReqPath = Just ("/" <> bucketName <> "/o")
-      , mbReqBody = Nothing
-      , mbReqHeaders = Just [("Content-Type", "application/json")]
-      , mbQueryParams = Just [("uploadType", Just "resumable")
-                            , ("name", BS.pack <$> Just objectName)]
-      }
+  eResp <-
+    doRequestRaw
+      RequestOptions
+        { reqMethod = POST
+        , reqUrl = "https://storage.googleapis.com/upload/storage/v1/b"
+        , mbReqPath = Just ("/" <> bucketName <> "/o")
+        , mbReqBody = Nothing
+        , mbReqHeaders = Just [("Content-Type", "application/json")]
+        , mbQueryParams =
+            Just
+              [ ("uploadType", Just "resumable")
+              , ("name", BS.pack <$> Just objectName)
+              ]
+        }
   case eResp of
     Left err -> pure $ Left err
-    Right resp -> case (getResponseHeader "location" resp) of
+    Right resp -> case getResponseHeader "location" resp of
       [] -> pure $ Left "Missing resumable upload URL in response"
-      (loc:_) -> pure $ Right (BS.unpack loc)
+      (loc : _) -> pure $ Right (BS.unpack loc)
 
--- | Uploads a file using a resumable upload session in chunks.
---
--- This function splits the objectContent into chunks and uploads sequentially.
+{- | Uploads a file using a resumable upload session in chunks.
+
+This function splits the objectContent into chunks and uploads sequentially.
+-}
 resumableUploadObject :: String -> String -> BSL.ByteString -> IO (Either String ())
 resumableUploadObject bucketName objectName objectContent = do
   eSessionUrl <- initResumableUpload bucketName objectName
@@ -385,56 +449,62 @@ resumableUploadObject bucketName objectName objectContent = do
     Right sessionUrl -> uploadChunks sessionUrl 0 (BSL.toStrict objectContent)
   where
     chunkSize :: Int
-    chunkSize = 1024 * 1024  -- 1MB per chunk (tune as needed)
-
+    chunkSize = 1024 * 1024 -- 1MB per chunk (tune as needed)
     uploadChunks :: String -> Int -> BS.ByteString -> IO (Either String ())
     uploadChunks sessionUrl offset bs
       | BS.null bs = pure $ Right ()
       | otherwise = do
           let (chunk, rest) = BS.splitAt chunkSize bs
               totalSize = offset + BS.length chunk + BS.length rest
-              endByte   = offset + BS.length chunk - 1
-              isLast    = BS.null rest
+              endByte = offset + BS.length chunk - 1
+              isLast = BS.null rest
               contentRange =
                 if isLast
-                  then "bytes " <> show offset 
-                                <> "-" 
-                                <> show endByte 
-                                <> "/" 
-                                <> show totalSize
+                  then
+                    "bytes "
+                      <> show offset
+                      <> "-"
+                      <> show endByte
+                      <> "/"
+                      <> show totalSize
                   else "bytes " <> show offset <> "-" <> show endByte <> "/*"
 
               headers =
                 [ ("Content-Length", BS.pack (show (BS.length chunk)))
-                , ("Content-Range",  BS.pack contentRange)
+                , ("Content-Range", BS.pack contentRange)
                 ]
 
-          eResp <- doRequestRaw
-            RequestOptions
-              { reqMethod = PUT
-              , reqUrl = sessionUrl
-              , mbReqPath = Nothing
-              , mbReqBody = Just (BSL.fromStrict chunk)
-              , mbReqHeaders = Just headers
-              , mbQueryParams = Nothing
-              }
+          eResp <-
+            doRequestRaw
+              RequestOptions
+                { reqMethod = PUT
+                , reqUrl = sessionUrl
+                , mbReqPath = Nothing
+                , mbReqBody = Just (BSL.fromStrict chunk)
+                , mbReqHeaders = Just headers
+                , mbQueryParams = Nothing
+                }
 
           case eResp of
             Left err -> pure $ Left err
             Right resp -> do
               let status = getResponseStatus resp
               if status == status200
-                then pure $ Right ()  -- Finished
-                else if status == status308
-                  then uploadChunks sessionUrl (offset + BS.length chunk) rest -- Continue
-                  else pure $ Left $ "Unexpected status: " <> show status
+                then pure $ Right () -- Finished
+                else
+                  if status == status308
+                    then uploadChunks sessionUrl (offset + BS.length chunk) rest -- Continue
+                    else pure $ Left $ "Unexpected status: " <> show status
 
 -- Helper types and functions (not exported, so no Haddock documentation needed)
 
 data CreateBucketRequest = CreateBucketRequest
-  { name :: String -- ^ Name of the bucket 
-  , location :: String  -- ^ Location of bucket e.g us-central1-a
-  , storageClass :: StorageClass -- ^ Storage Class
+  { name :: String
+  -- ^ Name of the bucket
+  , location :: String
+  -- ^ Location of bucket e.g us-central1-a
+  , storageClass :: StorageClass
+  -- ^ Storage Class
   }
   deriving (Show)
 

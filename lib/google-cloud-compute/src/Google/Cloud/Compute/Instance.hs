@@ -1,8 +1,13 @@
-{-|
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
+
+{- |
 Module      : Google.Cloud.Compute.Instance
 Copyright   : (c) 2025 Tushar
 License     : MIT
-Maintainer  : 
+Maintainer  :
 Stability   : experimental
 
 This module provides types and functions for interacting with Google Cloud Platform (GCP)
@@ -15,12 +20,6 @@ message ('Left') or a parsed response object ('Right').
 For more information on the underlying API, see:
 <https://cloud.google.com/compute/docs/reference/rest/v1/instances GCP Compute Instances Documentation>
 -}
-
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TupleSections #-}
-
 module Google.Cloud.Compute.Instance
   ( -- Data Types
     InstanceMetadata (..)
@@ -71,38 +70,38 @@ where
 import Data.Aeson
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BS8
+import qualified Data.Map.Strict as Map
 import Data.Maybe (catMaybes)
 import Data.Text (Text)
 import Google.Cloud.Common.Core
 import Google.Cloud.Compute.Common
-import qualified Data.Map.Strict as Map
 
 -- ** Query Parameter Types**
 
 -- | Query parameters for listing instances
 data ListInstancesQuery = ListInstancesQuery
   { filter_ :: Maybe String
-    -- ^ Filter expression for filtering listed instances
+  -- ^ Filter expression for filtering listed instances
   , maxResults :: Maybe Int
-    -- ^ Maximum number of results per page
+  -- ^ Maximum number of results per page
   , orderBy :: Maybe String
-    -- ^ Sort order for results
+  -- ^ Sort order for results
   , pageToken :: Maybe String
-    -- ^ Page token for paginated results
+  -- ^ Page token for paginated results
   , returnPartialSuccess :: Maybe Bool
-    -- ^ Whether to return partial success results
+  -- ^ Whether to return partial success results
   }
   deriving (Show, Eq)
 
 -- Query parameters for operations with requestId (start, stop, delete)
-data RequestIdQuery = RequestIdQuery
+newtype RequestIdQuery = RequestIdQuery
   { requestId :: Maybe String
   }
   deriving (Show, Eq)
 
 -- ** Data Types with Custom JSON Instances**
 
-data RunDuration
+newtype RunDuration
   = TerminationTime String
   deriving (Show, Eq)
 
@@ -112,7 +111,7 @@ instance FromJSON RunDuration where
 instance ToJSON RunDuration where
   toJSON (TerminationTime t) = object ["terminationTime" .= t]
 
-data OnInstanceTerminationAction = DiscardLocalSsd {discardLocalSsd :: Bool}
+newtype OnInstanceTerminationAction = DiscardLocalSsd {discardLocalSsd :: Bool}
   deriving (Show, Eq)
 
 instance FromJSON OnInstanceTerminationAction where
@@ -161,7 +160,7 @@ instance ToJSON Scheduling where
       , "instanceTerminationAction" .= instanceTerminationAction
       ]
 
-data InstanceTerminationAction
+newtype InstanceTerminationAction
   = RunDurationRunDuration RunDuration
   deriving (Show, Eq)
 
@@ -215,57 +214,57 @@ instance ToJSON Warning where
 -- | Metadata representing a Compute Engine instance
 data InstanceMetadata = InstanceMetadata
   { cpuPlatform :: Maybe String
-    -- ^ The CPU platform used by this instance
+  -- ^ The CPU platform used by this instance
   , labelFingerprint :: Maybe Text
-    -- ^ Fingerprint of the label metadata
+  -- ^ Fingerprint of the label metadata
   , instanceEncryptionKey :: Maybe InstanceEncryptionKey
-    -- ^ Encryption key configuration for the instance
+  -- ^ Encryption key configuration for the instance
   , minCpuPlatform :: Maybe Text
-    -- ^ Minimum CPU platform required by the instance
+  -- ^ Minimum CPU platform required by the instance
   , guestAccelerators :: Maybe [GuestAccelerator]
-    -- ^ List of guest accelerators attached to the instance
+  -- ^ List of guest accelerators attached to the instance
   , startRestricted :: Maybe Bool
-    -- ^ Whether instance start is restricted due to storage issues
+  -- ^ Whether instance start is restricted due to storage issues
   , deletionProtection :: Maybe Bool
-    -- ^ Whether deletion protection is enabled
+  -- ^ Whether deletion protection is enabled
   , resourcePolicies :: Maybe [Text]
-    -- ^ Resource policies applied to the instance
+  -- ^ Resource policies applied to the instance
   , sourceMachineImage :: Maybe Text
-    -- ^ Source machine image used to create the instance
+  -- ^ Source machine image used to create the instance
   , reservationAffinity :: Maybe ReservationAffinity
-    -- ^ Reservation affinity configuration
+  -- ^ Reservation affinity configuration
   , hostname :: Maybe Text
-    -- ^ Custom hostname assigned to the instance
+  -- ^ Custom hostname assigned to the instance
   , displayDevice :: Maybe DisplayDevice
-    -- ^ Display device configuration
+  -- ^ Display device configuration
   , shieldedInstanceConfig :: Maybe ShieldedInstanceConfig
-    -- ^ Shielded VM configuration
+  -- ^ Shielded VM configuration
   , shieldedInstanceIntegrityPolicy :: Maybe ShieldedInstanceIntegrityPolicy
-    -- ^ Integrity policy for shielded instances
+  -- ^ Integrity policy for shielded instances
   , sourceMachineImageEncryptionKey :: Maybe InstanceEncryptionKey
-    -- ^ Encryption key for source machine image
+  -- ^ Encryption key for source machine image
   , confidentialInstanceConfig :: Maybe ConfidentialInstanceConfig
-    -- ^ Confidential computing configuration
+  -- ^ Confidential computing configuration
   , fingerprint :: Maybe Text
-    -- ^ Unique fingerprint for resource metadata
+  -- ^ Unique fingerprint for resource metadata
   , privateIpv6GoogleAccess :: Maybe Text
-    -- ^ Private IPv6 Google access configuration
+  -- ^ Private IPv6 Google access configuration
   , lastStartTimestamp :: Maybe String
-    -- ^ Last start timestamp in RFC3339 format
+  -- ^ Last start timestamp in RFC3339 format
   , lastStopTimestamp :: Maybe String
-    -- ^ Last stop timestamp in RFC3339 format
+  -- ^ Last stop timestamp in RFC3339 format
   , lastSuspendedTimestamp :: Maybe String
-    -- ^ Last suspension timestamp in RFC3339 format
+  -- ^ Last suspension timestamp in RFC3339 format
   , satisfiesPzs :: Maybe Bool
-    -- ^ Whether instance satisfies zone separation policy
+  -- ^ Whether instance satisfies zone separation policy
   , satisfiesPzi :: Maybe Bool
-    -- ^ Whether instance satisfies instance separation policy
+  -- ^ Whether instance satisfies instance separation policy
   , resourceStatus :: Maybe ResourceStatus
-    -- ^ Current resource status of the instance
+  -- ^ Current resource status of the instance
   , networkPerformanceConfig :: Maybe NetworkPerformanceConfig
-    -- ^ Network performance configuration
+  -- ^ Network performance configuration
   , keyRevocationActionType :: Maybe Text
-    -- ^ Type of key revocation action if applicable
+  -- ^ Type of key revocation action if applicable
   }
   deriving (Show, Eq)
 
@@ -373,7 +372,7 @@ instance ToJSON ReservationAffinity where
         , ("values" .=) <$> values
         ]
 
-data DisplayDevice = DisplayDevice
+newtype DisplayDevice = DisplayDevice
   { enableDisplay :: Bool
   }
   deriving (Show, Eq)
@@ -408,7 +407,7 @@ instance ToJSON ShieldedInstanceConfig where
       , "enableIntegrityMonitoring" .= enableIntegrityMonitoring sic
       ]
 
-data ShieldedInstanceIntegrityPolicy = ShieldedInstanceIntegrityPolicy
+newtype ShieldedInstanceIntegrityPolicy = ShieldedInstanceIntegrityPolicy
   { policy :: Maybe UpdateAutoLearnPolicy
   }
   deriving (Show, Eq)
@@ -424,7 +423,7 @@ instance ToJSON ShieldedInstanceIntegrityPolicy where
       catMaybes
         [("policy" .=) <$> policy sip]
 
-data UpdateAutoLearnPolicy = UpdateAutoLearnPolicy {updateAutoLearnPolicy :: Bool}
+newtype UpdateAutoLearnPolicy = UpdateAutoLearnPolicy {updateAutoLearnPolicy :: Bool}
   deriving (Show, Eq)
 
 instance FromJSON UpdateAutoLearnPolicy where
@@ -484,7 +483,7 @@ instance ToJSON InstanceEncryptionKey where
         , ("kmsKeyName" .=) <$> kmsKeyName iek
         ]
 
-data NetworkPerformanceConfig = NetworkPerformanceConfig
+newtype NetworkPerformanceConfig = NetworkPerformanceConfig
   { totalEgressBandwidthTier :: Text
   }
   deriving (Show, Eq)
@@ -562,11 +561,11 @@ instance ToJSON InstanceList where
 -- | Response structure for delete instance operation
 data InstanceDeleteResp = InstanceDeleteResp
   { kind :: Maybe String
-     -- ^ Type of resource (always "compute#operation")
+  -- ^ Type of resource (always "compute#operation")
   , id_ :: Maybe String
-        -- ^ Unique identifier for the operation
+  -- ^ Unique identifier for the operation
   , creationTimestamp :: Maybe String
-      -- ^ Creation timestamp in RFC3339 format
+  -- ^ Creation timestamp in RFC3339 format
   , name :: Maybe String
   , zone :: Maybe String
   , clientOperationId :: Maybe String
@@ -649,7 +648,7 @@ instance ToJSON InstanceDeleteResp where
         , ("operationGroupId" .=) <$> operationGroupId
         ]
 
-data Error_ = Error_
+newtype Error_ = Error_
   { errors :: Maybe [ErrorDetail]
   }
   deriving (Show, Eq)
@@ -761,7 +760,7 @@ instance ToJSON QuotaInfo where
         , ("rolloutStatus" .=) <$> rolloutStatus qi
         ]
 
-data Help = Help
+newtype Help = Help
   { links :: Maybe [Link]
   }
   deriving (Show, Eq)
@@ -870,7 +869,7 @@ data InsertInstanceOps = InsertInstanceOps
   }
   deriving (Show, Eq)
 
-data NetworkInterface = NetworkInterface
+newtype NetworkInterface = NetworkInterface
   { network :: String
   }
   deriving (Show, Eq)
@@ -899,82 +898,86 @@ instance ToJSON NetworkInterface where
 -- | Represents a disk attached to a Compute Engine instance
 data Disk = Disk
   { autoDelete :: Bool
-    -- ^ Whether disk should be auto-deleted when instance is deleted
+  -- ^ Whether disk should be auto-deleted when instance is deleted
   , boot :: Bool
-    -- ^ Whether this is a boot disk
+  -- ^ Whether this is a boot disk
   , deviceName :: String
-    -- ^ Unique device name visible to the guest OS
+  -- ^ Unique device name visible to the guest OS
   , initializeParams :: Maybe InitializeParams
-    -- ^ Initialization parameters for the disk
+  -- ^ Initialization parameters for the disk
   , mode :: String
-    -- ^ Access mode (READ_WRITE or READ_ONLY)
+  -- ^ Access mode (READ_WRITE or READ_ONLY)
   , type_ :: String
-    -- ^ Disk type (PERSISTENT or SCRATCH)
+  -- ^ Disk type (PERSISTENT or SCRATCH)
   }
   deriving (Show, Eq)
 
 -- | Disk initialization parameters for new disk creation
 data InitializeParams = InitializeParams
   { diskSizeGb :: String
-    -- ^ Size of the disk in GB (passed as String to match API format)
+  -- ^ Size of the disk in GB (passed as String to match API format)
   , diskType :: String
-    -- ^ Full URL of disk type resource
+  -- ^ Full URL of disk type resource
   , labels :: Map.Map String String
-    -- ^ Labels to apply to the disk
+  -- ^ Labels to apply to the disk
   , sourceImage :: String
-    -- ^ Source image used to create the disk
+  -- ^ Source image used to create the disk
   }
   deriving (Show, Eq)
 
 instance ToJSON Disk where
-  toJSON Disk{..} = object
-    [ "autoDelete" .= autoDelete
-    , "boot" .= boot
-    , "deviceName" .= deviceName
-    , "initializeParams" .= initializeParams
-    , "mode" .= mode
-    , "type" .= type_  -- Map type_ to "type" in JSON
-    ]
+  toJSON Disk {..} =
+    object
+      [ "autoDelete" .= autoDelete
+      , "boot" .= boot
+      , "deviceName" .= deviceName
+      , "initializeParams" .= initializeParams
+      , "mode" .= mode
+      , "type" .= type_ -- Map type_ to "type" in JSON
+      ]
 
 instance FromJSON Disk where
-  parseJSON = withObject "Disk" $ \v -> Disk
-    <$> v .: "autoDelete"
-    <*> v .: "boot"
-    <*> v .: "deviceName"
-    <*> v .:? "initializeParams"
-    <*> v .: "mode"
-    <*> v .: "type"  -- Parse "type" field into type_
+  parseJSON = withObject "Disk" $ \v ->
+    Disk
+      <$> v .: "autoDelete"
+      <*> v .: "boot"
+      <*> v .: "deviceName"
+      <*> v .:? "initializeParams"
+      <*> v .: "mode"
+      <*> v .: "type" -- Parse "type" field into type_
 
 instance ToJSON InitializeParams where
-  toJSON InitializeParams{..} = object
-    [ "diskSizeGb" .= diskSizeGb
-    , "diskType" .= diskType
-    , "labels" .= labels
-    , "sourceImage" .= sourceImage
-    ]
+  toJSON InitializeParams {..} =
+    object
+      [ "diskSizeGb" .= diskSizeGb
+      , "diskType" .= diskType
+      , "labels" .= labels
+      , "sourceImage" .= sourceImage
+      ]
 
 instance FromJSON InitializeParams where
-  parseJSON = withObject "InitializeParams" $ \v -> InitializeParams
-    <$> v .: "diskSizeGb"
-    <*> v .: "diskType"
-    <*> v .: "labels"
-    <*> v .: "sourceImage"
-
+  parseJSON = withObject "InitializeParams" $ \v ->
+    InitializeParams
+      <$> v .: "diskSizeGb"
+      <*> v .: "diskType"
+      <*> v .: "labels"
+      <*> v .: "sourceImage"
 
 -- ** Instance Operation Functions**
 
--- | List instances in a given zone
---
--- @
--- listInstances 
---   :: String       -- ^ GCP Project ID
---   -> String       -- ^ Zone name
---   -> Maybe ListInstancesQuery  -- ^ Optional query parameters
---   -> IO (Either String InstanceList)
--- @
---
--- Returns either an error message or an 'InstanceList' containing
--- the collection of instances
+{- | List instances in a given zone
+
+@
+listInstances
+  :: String       -- ^ GCP Project ID
+  -> String       -- ^ Zone name
+  -> Maybe ListInstancesQuery  -- ^ Optional query parameters
+  -> IO (Either String InstanceList)
+@
+
+Returns either an error message or an 'InstanceList' containing
+the collection of instances
+-}
 listInstances ::
   String -> String -> Maybe ListInstancesQuery -> IO (Either String InstanceList)
 listInstances projectId zone_ mbQuery = do
@@ -1094,9 +1097,13 @@ insertInstance projectId zone_ insertOps mbQuery = do
 -- ** Default Query Parameter Constructors**
 
 -- All fields set to 'Nothing', which the API interprets as:
+
 -- * No filtering
+
 -- * Default page size
+
 -- * No sorting
+
 -- * Return full results
 defaultListInstancesQuery :: ListInstancesQuery
 defaultListInstancesQuery =
@@ -1111,12 +1118,13 @@ defaultListInstancesQuery =
 defaultRequestIdQuery :: String -> RequestIdQuery
 defaultRequestIdQuery rid = RequestIdQuery {requestId = Just rid}
 
--- | Create a default instance configuration
---
--- Creates a basic instance configuration with:
--- * 10GB persistent boot disk
--- * Default Debian image
--- * Network interface on default VPC
+{- | Create a default instance configuration
+
+Creates a basic instance configuration with:
+* 10GB persistent boot disk
+* Default Debian image
+* Network interface on default VPC
+-}
 defaultInsertInstanceOps :: String -> String -> String -> String -> InsertInstanceOps
 defaultInsertInstanceOps projectId zone instanceName machineType =
   InsertInstanceOps
@@ -1124,22 +1132,25 @@ defaultInsertInstanceOps projectId zone instanceName machineType =
     , machineType = "zones/" ++ zone ++ "/machineTypes/" ++ machineType
     , disks = Just [defaultDisk]
     , networkInterfaces = Just [defaultNetworkInterface]
-  }
+    }
   where
-    defaultDisk = Disk
-      { autoDelete = True
-      , boot = True
-      , deviceName = instanceName ++ "-boot"  -- Dynamic, based on instanceName
-      , initializeParams = Just defaultInitializeParams
-      , mode = "READ_WRITE"
-      , type_ = "PERSISTENT"
-      }
-    defaultInitializeParams = InitializeParams
-      { diskSizeGb = "10"
-      , diskType = "projects/" ++ projectId ++ "/zones/" ++ zone ++ "/diskTypes/pd-standard"
-      , labels = Map.empty
-      , sourceImage = "projects/debian-cloud/global/images/debian-12-bookworm-v20250311"
-      }
-    defaultNetworkInterface = NetworkInterface
-      { network = "projects/" ++ projectId ++ "/global/networks/default"
-      }
+    defaultDisk =
+      Disk
+        { autoDelete = True
+        , boot = True
+        , deviceName = instanceName ++ "-boot" -- Dynamic, based on instanceName
+        , initializeParams = Just defaultInitializeParams
+        , mode = "READ_WRITE"
+        , type_ = "PERSISTENT"
+        }
+    defaultInitializeParams =
+      InitializeParams
+        { diskSizeGb = "10"
+        , diskType = "projects/" ++ projectId ++ "/zones/" ++ zone ++ "/diskTypes/pd-standard"
+        , labels = Map.empty
+        , sourceImage = "projects/debian-cloud/global/images/debian-12-bookworm-v20250311"
+        }
+    defaultNetworkInterface =
+      NetworkInterface
+        { network = "projects/" ++ projectId ++ "/global/networks/default"
+        }

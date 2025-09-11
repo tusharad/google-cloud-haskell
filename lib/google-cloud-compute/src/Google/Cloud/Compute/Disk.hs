@@ -1,17 +1,17 @@
-{-|
-Module      : Google.Cloud.Compute.Disk
-Copyright   : (c) 2025
-License     : MIT
-Maintainer  : 
-Stability   : experimental
-
-This module provides a Haskell client for Google Cloud Compute Engine Disk operations.
--}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
+{- |
+Module      : Google.Cloud.Compute.Disk
+Copyright   : (c) 2025
+License     : MIT
+Maintainer  :
+Stability   : experimental
+
+This module provides a Haskell client for Google Cloud Compute Engine Disk operations.
+-}
 module Google.Cloud.Compute.Disk
   ( listDisks
   , insertDisk
@@ -21,7 +21,7 @@ module Google.Cloud.Compute.Disk
   , Operation (..)
   , deleteDisk
   , createDiskSnapshot
-  , CreateSnapshotResp 
+  , CreateSnapshotResp
   , CreateSnapshotOps (..)
   , Warning (..)
   , WarningData (..)
@@ -38,117 +38,183 @@ import Network.HTTP.Simple
 
 -- | Represents a warning object returned by Google Cloud API operations
 data Warning = Warning
-  { code :: String       -- ^ Warning type identifier
-  , message :: String    -- ^ Human-readable warning message
-  , data_ :: Maybe [WarningData] -- ^ Optional metadata about the warning
+  { code :: String
+  -- ^ Warning type identifier
+  , message :: String
+  -- ^ Human-readable warning message
+  , data_ :: Maybe [WarningData]
+  -- ^ Optional metadata about the warning
   }
   deriving (Show, Eq)
 
 -- | Key-value pair providing additional context for warnings
 data WarningData = WarningData
-  { key :: String    -- ^ Metadata key describing the warning aspect
-  , value :: String  -- ^ Metadata value associated with the key
+  { key :: String
+  -- ^ Metadata key describing the warning aspect
+  , value :: String
+  -- ^ Metadata value associated with the key
   }
   deriving (Show, Eq)
 
 -- | Response format for disk listing operations
 data DiskResponse = DiskResponse
-  { kind :: Maybe String         -- ^ Type identifier ("compute#diskList")
-  , id :: Maybe String           -- ^ Unique identifier for the resource
-  , items :: Maybe [DiskItem]    -- ^ List of disks in the project/zone
-  , nextPageToken :: Maybe String -- ^ Pagination token for next page
-  , selfLink :: Maybe String     -- ^ Server-defined URL for the resource
-  , warning :: Maybe Warning     -- ^ Any warnings about the result
+  { kind :: Maybe String
+  -- ^ Type identifier ("compute#diskList")
+  , id :: Maybe String
+  -- ^ Unique identifier for the resource
+  , items :: Maybe [DiskItem]
+  -- ^ List of disks in the project/zone
+  , nextPageToken :: Maybe String
+  -- ^ Pagination token for next page
+  , selfLink :: Maybe String
+  -- ^ Server-defined URL for the resource
+  , warning :: Maybe Warning
+  -- ^ Any warnings about the result
   }
   deriving (Show, Eq)
 
 -- | Represents a Google Cloud Persistent Disk
 data DiskItem = DiskItem
-  { kind :: Maybe String              -- ^ Type identifier ("compute#disk")
-  , id :: Maybe String                -- ^ Unique numeric ID
-  , creationTimestamp :: Maybe String -- ^ ISO 8601 creation timestamp
-  , name :: Maybe String              -- ^ User-provided disk name
-  , description :: Maybe String       -- ^ Optional disk description
-  , sizeGb :: Maybe String            -- ^ Disk size in gigabytes
-  , zone :: Maybe String              -- ^ Zone where the disk resides
-  , status :: Maybe String            -- ^ Current status (READY, CREATING, etc.)
-  , sourceSnapshot :: Maybe String    -- ^ Source snapshot URL if applicable
-  , sourceSnapshotId :: Maybe String  -- ^ Unique ID of source snapshot
-  , sourceImage :: Maybe String       -- ^ Source image URL if applicable
-  , sourceImageId :: Maybe String     -- ^ Unique ID of source image
-  , type_ :: Maybe String             -- ^ Disk type (e.g., "pd-standard")
-  , labels :: Maybe (Map String String) -- ^ User-defined labels
-  , labelFingerprint :: Maybe String  -- ^ Fingerprint for label operations
-  , licenses :: Maybe [String]        -- ^ License resource URLs
-  , users :: Maybe [String]           -- ^ Instances currently using the disk
-  , guestOsFeatures :: Maybe [GuestOsFeature] -- ^ OS-specific features
-  , diskEncryptionKey :: Maybe EncryptionKey -- ^ Disk encryption details
-  , sourceDisk :: Maybe String        -- ^ Source disk URL for regional disks
-  , sourceDiskId :: Maybe String      -- ^ Unique ID of source disk
-  , physicalBlockSizeBytes :: Maybe String -- ^ Physical block size in bytes
-  , provisionedIops :: Maybe String   -- ^ Provisioned IOPS for SSD
-  , resourcePolicies :: Maybe [String] -- ^ Resource policy URLs
-  , selfLink :: Maybe String          -- ^ Server-defined URL for the disk
+  { kind :: Maybe String
+  -- ^ Type identifier ("compute#disk")
+  , id :: Maybe String
+  -- ^ Unique numeric ID
+  , creationTimestamp :: Maybe String
+  -- ^ ISO 8601 creation timestamp
+  , name :: Maybe String
+  -- ^ User-provided disk name
+  , description :: Maybe String
+  -- ^ Optional disk description
+  , sizeGb :: Maybe String
+  -- ^ Disk size in gigabytes
+  , zone :: Maybe String
+  -- ^ Zone where the disk resides
+  , status :: Maybe String
+  -- ^ Current status (READY, CREATING, etc.)
+  , sourceSnapshot :: Maybe String
+  -- ^ Source snapshot URL if applicable
+  , sourceSnapshotId :: Maybe String
+  -- ^ Unique ID of source snapshot
+  , sourceImage :: Maybe String
+  -- ^ Source image URL if applicable
+  , sourceImageId :: Maybe String
+  -- ^ Unique ID of source image
+  , type_ :: Maybe String
+  -- ^ Disk type (e.g., "pd-standard")
+  , labels :: Maybe (Map String String)
+  -- ^ User-defined labels
+  , labelFingerprint :: Maybe String
+  -- ^ Fingerprint for label operations
+  , licenses :: Maybe [String]
+  -- ^ License resource URLs
+  , users :: Maybe [String]
+  -- ^ Instances currently using the disk
+  , guestOsFeatures :: Maybe [GuestOsFeature]
+  -- ^ OS-specific features
+  , diskEncryptionKey :: Maybe EncryptionKey
+  -- ^ Disk encryption details
+  , sourceDisk :: Maybe String
+  -- ^ Source disk URL for regional disks
+  , sourceDiskId :: Maybe String
+  -- ^ Unique ID of source disk
+  , physicalBlockSizeBytes :: Maybe String
+  -- ^ Physical block size in bytes
+  , provisionedIops :: Maybe String
+  -- ^ Provisioned IOPS for SSD
+  , resourcePolicies :: Maybe [String]
+  -- ^ Resource policy URLs
+  , selfLink :: Maybe String
+  -- ^ Server-defined URL for the disk
   }
   deriving (Show, Eq)
 
 -- | Guest OS features enabled on the disk
-data GuestOsFeature = GuestOsFeature
-  { type_ :: String  -- ^ Feature type (e.g., "UEFI_COMPATIBLE")
+newtype GuestOsFeature = GuestOsFeature
+  { type_ :: String
+  -- ^ Feature type (e.g., "UEFI_COMPATIBLE")
   }
   deriving (Show, Eq)
 
 -- | Disk encryption key information
 data EncryptionKey = EncryptionKey
-  { rawKey :: Maybe String        -- ^ Raw encryption key (base64)
-  , rsaEncryptedKey :: Maybe String -- ^ RSA-wrapped encryption key
-  , sha256 :: Maybe String        -- ^ RFC 4648 base64 SHA-256 hash
+  { rawKey :: Maybe String
+  -- ^ Raw encryption key (base64)
+  , rsaEncryptedKey :: Maybe String
+  -- ^ RSA-wrapped encryption key
+  , sha256 :: Maybe String
+  -- ^ RFC 4648 base64 SHA-256 hash
   }
   deriving (Show, Eq)
 
 -- | Long-running operation resource
 data Operation = Operation
-  { id :: Maybe String          -- ^ Unique operation ID
-  , name :: Maybe String        -- ^ Operation name
-  , zone :: Maybe String        -- ^ Zone where operation is executed
-  , operationType :: Maybe String -- ^ Operation type (insert, delete, etc.)
-  , targetLink :: Maybe String  -- ^ URL of resource being modified
-  , status :: Maybe String      -- ^ Current status (DONE, RUNNING, etc.)
-  , progress :: Maybe Int       -- ^ Operation progress (0-100)
-  , insertTime :: Maybe String  -- ^ ISO 8601 creation timestamp
-  , startTime :: Maybe String   -- ^ ISO 8601 start timestamp
-  , endTime :: Maybe String     -- ^ ISO 8601 completion timestamp
-  , error :: Maybe OperationError -- ^ Error details if failed
-  , warnings :: Maybe [Warning] -- ^ Warnings during operation
-  , selfLink :: Maybe String    -- ^ Server-defined URL for the operation
+  { id :: Maybe String
+  -- ^ Unique operation ID
+  , name :: Maybe String
+  -- ^ Operation name
+  , zone :: Maybe String
+  -- ^ Zone where operation is executed
+  , operationType :: Maybe String
+  -- ^ Operation type (insert, delete, etc.)
+  , targetLink :: Maybe String
+  -- ^ URL of resource being modified
+  , status :: Maybe String
+  -- ^ Current status (DONE, RUNNING, etc.)
+  , progress :: Maybe Int
+  -- ^ Operation progress (0-100)
+  , insertTime :: Maybe String
+  -- ^ ISO 8601 creation timestamp
+  , startTime :: Maybe String
+  -- ^ ISO 8601 start timestamp
+  , endTime :: Maybe String
+  -- ^ ISO 8601 completion timestamp
+  , error :: Maybe OperationError
+  -- ^ Error details if failed
+  , warnings :: Maybe [Warning]
+  -- ^ Warnings during operation
+  , selfLink :: Maybe String
+  -- ^ Server-defined URL for the operation
   }
   deriving (Show, Eq)
 
 -- | Error information from failed operations
-data OperationError = OperationError
-  { errors :: [ErrorDetail] -- ^ List of error details
+newtype OperationError = OperationError
+  { errors :: [ErrorDetail]
+  -- ^ List of error details
   }
   deriving (Show, Eq)
 
 -- | Detailed error information
 data ErrorDetail = ErrorDetail
-  { code :: String         -- ^ Error type identifier
-  , message :: String      -- ^ Human-readable error message
-  , location :: Maybe String -- ^ Location in request that triggered error
+  { code :: String
+  -- ^ Error type identifier
+  , message :: String
+  -- ^ Human-readable error message
+  , location :: Maybe String
+  -- ^ Location in request that triggered error
   }
   deriving (Show, Eq)
 
 -- | Disk creation options
 data InsertDiskOps = InsertDiskOps
-  { name :: String                -- ^ Required disk name
-  , sizeGb :: String              -- ^ Required size in gigabytes
-  , description :: Maybe String   -- ^ Optional description
-  , type_ :: Maybe String         -- ^ Disk type (default: pd-standard)
-  , sourceImage :: Maybe String   -- ^ Source image URL for disk creation
-  , sourceSnapshot :: Maybe String -- ^ Source snapshot URL for disk creation
-  , labels :: Maybe (Map String String) -- ^ Initial labels
-  , guestOsFeatures :: Maybe [GuestOsFeature] -- ^ OS features to enable
-  , diskEncryptionKey :: Maybe EncryptionKey -- ^ Encryption configuration
+  { name :: String
+  -- ^ Required disk name
+  , sizeGb :: String
+  -- ^ Required size in gigabytes
+  , description :: Maybe String
+  -- ^ Optional description
+  , type_ :: Maybe String
+  -- ^ Disk type (default: pd-standard)
+  , sourceImage :: Maybe String
+  -- ^ Source image URL for disk creation
+  , sourceSnapshot :: Maybe String
+  -- ^ Source snapshot URL for disk creation
+  , labels :: Maybe (Map String String)
+  -- ^ Initial labels
+  , guestOsFeatures :: Maybe [GuestOsFeature]
+  -- ^ OS features to enable
+  , diskEncryptionKey :: Maybe EncryptionKey
+  -- ^ Encryption configuration
   }
   deriving (Show, Eq)
 
@@ -157,11 +223,16 @@ type InsertDiskResponse = Operation
 
 -- | Snapshot creation options
 data CreateSnapshotOps = CreateSnapshotOps
-  { name :: String                -- ^ Required snapshot name
-  , description :: Maybe String   -- ^ Optional description
-  , labels :: Maybe (Map String String) -- ^ Labels for the snapshot
-  , storageLocations :: Maybe [String] -- ^ Preferred storage locations
-  , snapshotEncryptionKey :: Maybe EncryptionKey -- ^ Snapshot encryption
+  { name :: String
+  -- ^ Required snapshot name
+  , description :: Maybe String
+  -- ^ Optional description
+  , labels :: Maybe (Map String String)
+  -- ^ Labels for the snapshot
+  , storageLocations :: Maybe [String]
+  -- ^ Preferred storage locations
+  , snapshotEncryptionKey :: Maybe EncryptionKey
+  -- ^ Snapshot encryption
   }
   deriving (Show, Eq)
 
@@ -184,13 +255,13 @@ data InsertDiskQuery = InsertDiskQuery
   deriving (Show, Eq)
 
 -- | Query parameters for deleteDisk
-data DeleteDiskQuery = DeleteDiskQuery
+newtype DeleteDiskQuery = DeleteDiskQuery
   { force :: Maybe Bool
   }
   deriving (Show, Eq)
 
 -- | Query parameters for createDiskSnapshot
-data CreateSnapshotQuery = CreateSnapshotQuery
+newtype CreateSnapshotQuery = CreateSnapshotQuery
   { guestFlush :: Maybe Bool
   }
   deriving (Show, Eq)
@@ -470,15 +541,22 @@ instance ToJSON CreateSnapshotOps where
       ]
 
 -- Functions
--- | List disks in a zone
---
--- Example:
---
--- > listDisks "my-project" "us-central1-a" Nothing
-listDisks :: String               -- ^ GCP Project ID
-          -> String               -- ^ Zone name
-          -> Maybe ListDisksQuery -- ^ Optional query parameters
-          -> IO (Either String DiskResponse) -- ^ List result or error}
+
+{- | List disks in a zone
+
+Example:
+
+> listDisks "my-project" "us-central1-a" Nothing
+-}
+listDisks ::
+  -- | GCP Project ID
+  String ->
+  -- | Zone name
+  String ->
+  -- | Optional query parameters
+  Maybe ListDisksQuery ->
+  -- | List result or error}
+  IO (Either String DiskResponse)
 listDisks project zone_ mbQuery = do
   let queryParams = maybe [] queryToList mbQuery
   doRequestJSON
@@ -499,16 +577,23 @@ listDisks project zone_ mbQuery = do
       , maybe mempty (\x -> ("orderBy", Just $ BS.pack x)) orderBy
       ]
 
--- | Create a new persistent disk
---
--- Example:
---
--- > insertDisk "my-project" "us-central1-a" (defaultInsertOps "disk1" "100") Nothing
-insertDisk :: String               -- ^ GCP Project ID
-           -> String               -- ^ Zone name
-           -> InsertDiskOps        -- ^ Disk configuration
-           -> Maybe InsertDiskQuery -- ^ Optional query parameters
-           -> IO (Either String InsertDiskResponse) -- ^ Operation or error}
+{- | Create a new persistent disk
+
+Example:
+
+> insertDisk "my-project" "us-central1-a" (defaultInsertOps "disk1" "100") Nothing
+-}
+insertDisk ::
+  -- | GCP Project ID
+  String ->
+  -- | Zone name
+  String ->
+  -- | Disk configuration
+  InsertDiskOps ->
+  -- | Optional query parameters
+  Maybe InsertDiskQuery ->
+  -- | Operation or error}
+  IO (Either String InsertDiskResponse)
 insertDisk project zone_ insertDiskOps mbQuery = do
   let queryParams = maybe [] queryToList mbQuery
   doRequestJSON
@@ -532,16 +617,23 @@ insertDisk project zone_ insertDiskOps mbQuery = do
 
 -- | Deletes a disk with optional query parameters
 
--- | Delete a persistent disk
---
--- Example:
---
--- > deleteDisk "my-project" "us-central1-a" "old-disk" (Just DeleteDiskQuery { force = True })
-deleteDisk :: String               -- ^ GCP Project ID
-           -> String               -- ^ Zone name
-           -> String               -- ^ Disk name to delete
-           -> Maybe DeleteDiskQuery -- ^ Optional force deletion
-           -> IO (Either String Operation) -- ^ Operation or error
+{- | Delete a persistent disk
+
+Example:
+
+> deleteDisk "my-project" "us-central1-a" "old-disk" (Just DeleteDiskQuery { force = True })
+-}
+deleteDisk ::
+  -- | GCP Project ID
+  String ->
+  -- | Zone name
+  String ->
+  -- | Disk name to delete
+  String ->
+  -- | Optional force deletion
+  Maybe DeleteDiskQuery ->
+  -- | Operation or error
+  IO (Either String Operation)
 deleteDisk project zone_ diskName mbQuery = do
   let queryParams = maybe [] queryToList mbQuery
   doRequestJSON
@@ -559,19 +651,27 @@ deleteDisk project zone_ diskName mbQuery = do
       [ maybe mempty (\x -> ("force", Just . BS.pack $ show x)) (force q)
       ]
 
--- | Creates a snapshot of a disk with optional query parameters
--- | Create disk snapshot
---
--- Example:
---
--- > createDiskSnapshot "my-project" "us-central1-a" "source-disk" 
--- >   (defaultCreateSnapshotOps "daily-backup") Nothing
-createDiskSnapshot :: String               -- ^ GCP Project ID
-                   -> String               -- ^ Zone name
-                   -> String               -- ^ Source disk name
-                   -> CreateSnapshotOps    -- ^ Snapshot configuration
-                   -> Maybe CreateSnapshotQuery -- ^ Optional guest flush
-                   -> IO (Either String CreateSnapshotResp) -- ^ Operation or error
+{- | Creates a snapshot of a disk with optional query parameters
+| Create disk snapshot
+
+Example:
+
+> createDiskSnapshot "my-project" "us-central1-a" "source-disk"
+>   (defaultCreateSnapshotOps "daily-backup") Nothing
+-}
+createDiskSnapshot ::
+  -- | GCP Project ID
+  String ->
+  -- | Zone name
+  String ->
+  -- | Source disk name
+  String ->
+  -- | Snapshot configuration
+  CreateSnapshotOps ->
+  -- | Optional guest flush
+  Maybe CreateSnapshotQuery ->
+  -- | Operation or error
+  IO (Either String CreateSnapshotResp)
 createDiskSnapshot project zone_ diskName createSnapshotOps mbQuery = do
   let queryParams = maybe [] queryToList mbQuery
   doRequestJSON
@@ -590,12 +690,13 @@ createDiskSnapshot project zone_ diskName createSnapshotOps mbQuery = do
       [ maybe mempty (\x -> ("guestFlush", Just . BS.pack $ show x)) (guestFlush q)
       ]
 
--- | Default disk creation options
---
--- Creates minimal valid configuration with required name and size.
--- Other fields can be added using record update syntax:
---
--- > defaultInsertOps "new-disk" "50" { type_ = Just "pd-ssd" }
+{- | Default disk creation options
+
+Creates minimal valid configuration with required name and size.
+Other fields can be added using record update syntax:
+
+> defaultInsertOps "new-disk" "50" { type_ = Just "pd-ssd" }
+-}
 defaultInsertOps :: String -> String -> InsertDiskOps
 defaultInsertOps diskName diskSizeGb =
   InsertDiskOps
@@ -610,12 +711,13 @@ defaultInsertOps diskName diskSizeGb =
     , diskEncryptionKey = Nothing
     }
 
--- | Default snapshot creation options
---
--- Creates minimal valid configuration with required snapshot name.
--- Additional fields can be added using record update syntax:
---
--- > defaultCreateSnapshotOps "backup" { description = Just "Daily backup" }
+{- | Default snapshot creation options
+
+Creates minimal valid configuration with required snapshot name.
+Additional fields can be added using record update syntax:
+
+> defaultCreateSnapshotOps "backup" { description = Just "Daily backup" }
+-}
 defaultCreateSnapshotOps :: String -> CreateSnapshotOps
 defaultCreateSnapshotOps snapshotName =
   CreateSnapshotOps
